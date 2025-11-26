@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aequitas - Prompt Engineering Workshop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f5f5f4; color: #1c1917; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 200px;
+        }
+
+        /* Utility */
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .step-badge {
+            background-color: #ea580c;
+            color: white;
+            font-weight: bold;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        /* --- STANDARDISIERTE BOXEN --- */
+
+        /* 1. Aufgabe & Ziel (Blau) */
+        .box-task {
+            background-color: #f0f9ff; /* sky-50 */
+            border-left: 4px solid #0284c7; /* sky-600 */
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .label-task {
+            font-weight: 800;
+            color: #0369a1; /* sky-700 */
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* 2. Prompt / Idee (Grau/Code) */
+        .box-prompt {
+            background-color: #fafaf9; /* stone-50 */
+            border: 1px solid #e7e5e4; /* stone-200 */
+            border-radius: 0.75rem;
+            padding: 0; /* Inner padding handled by children */
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .box-prompt-header {
+            background-color: #f5f5f4; /* stone-100 */
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #e7e5e4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .box-prompt-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .label-prompt {
+            font-weight: 700;
+            color: #57534e; /* stone-600 */
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .box-prompt-content {
+            padding: 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.875rem;
+            color: #44403c; /* stone-700 */
+            white-space: pre-wrap; /* Preserve formatting */
+            line-height: 1.6;
+        }
+        
+        /* Buttons */
+        .btn-copy {
+            background-color: white;
+            border: 1px solid #d6d3d1;
+            color: #57534e;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .btn-copy:hover {
+            background-color: #f5f5f4;
+            color: #ea580c;
+            border-color: #fdba74;
+        }
+
+        .btn-openwebui {
+            background-color: #ea580c; /* orange-600 */
+            border: 1px solid #ea580c;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            text-decoration: none;
+        }
+        .btn-openwebui:hover {
+            background-color: #c2410c; /* orange-700 */
+            border-color: #c2410c;
+        }
+
+        /* 3. Reflektion (Grün) */
+        .box-reflection {
+            background-color: #f0fdf4; /* green-50 */
+            border-left: 4px solid #16a34a; /* green-600 */
+            padding: 1.25rem;
+            margin-top: 2rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .label-reflection {
+            font-weight: 800;
+            color: #15803d; /* green-700 */
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Cheat Sheet Box */
+        .cs-box {
+            border-left: 4px solid #ea580c;
+            background-color: #fff7ed;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+        .cs-title {
+            font-weight: bold;
+            color: #9a3412;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-orange-200 selection:text-orange-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🤖</span>
+                    <div class="leading-tight">
+                        <span class="font-bold text-xl text-stone-800 tracking-tight block">Aequitas Workshop</span>
+                        <span class="text-xs text-stone-500 font-medium">27.11.2025</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 text-sm">
+                    <a href="#scenario-select" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Start</a>
+                    <a href="#ex1" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Übung 1</a>
+                    <a href="#ex2" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Übung 2</a>
+                    <a href="#ex3" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Übung 3-4</a>
+                    <a href="#ex5" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Übung 5</a>
+                    <a href="#cheatsheet" class="px-3 py-2 bg-stone-800 text-white rounded hover:bg-stone-700 transition-colors font-bold">Cheat Sheet</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-stone-900 mb-4">Aequitas - Prompt Engineering Workshop</h1>
+            <div class="max-w-3xl mx-auto bg-stone-50 border border-stone-200 rounded-xl p-6 text-left shadow-sm">
+                <h3 class="font-bold text-stone-800 mb-2 flex items-center gap-2">👋 Willkommen zum Workshop</h3>
+                <p class="text-stone-600 mb-4 leading-relaxed">
+                    Diese Webseite führt dich durch die Übungen des heutigen Tages. Suche dir zu Beginn <strong>einen der vier Themenstränge</strong> aus oder überlege dir ein eigenes Thema für den heutigen Tag, welches dich beruflich häufig beschäftigt.
+                </p>
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <strong class="text-orange-800 block mb-1">Anleitung zur Gruppenarbeit:</strong>
+                    <ul class="list-disc list-inside text-stone-700 space-y-1 mb-3">
+                        <li>Bildet Gruppen von <strong>2 bis 3 Personen</strong>.</li>
+                        <li>Innerhalb der Gruppe könnt ihr am gleichen Thema arbeiten oder unterschiedliche Szenarien wählen.</li>
+                        <li>Du wirst deinen gewählten Themenstrang über mehrere, aufeinander aufbauende Übungen hinweg bearbeiten.</li>
+                    </ul>
+                    <p class="text-sm text-stone-600 bg-white p-2 rounded border border-orange-100">
+                        💬 <strong>Wichtig:</strong> Zu jeder Übung gibt es <strong>Reflektionsfragen</strong> (grüne Box). Besprecht diese bitte kurz in der Gruppe und teilt die wichtigsten Erkenntnisse anschließend im Plenum.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- SETUP: SCENARIO SELECTION -->
+        <section id="scenario-select" class="scroll-mt-24">
+            <div class="flex items-center mb-6">
+                <span class="bg-stone-800 text-white px-3 py-1 rounded text-sm font-bold mr-3">SCHRITT 1</span>
+                <h2 class="text-2xl font-bold text-stone-800">Wähle deinen Themenstrang</h2>
+            </div>
+
+            <!-- Buttons Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <button onclick="setTheme('sales')" id="btn-sales" class="card-hover bg-white p-5 rounded-xl border-2 border-transparent shadow-sm text-left group">
+                    <div class="text-2xl mb-2">💼 Thema 1</div>
+                    <h3 class="font-bold text-stone-800">Sales & Strategy</h3>
+                    <p class="text-xs text-stone-500 mt-1">Pricing & Wettbewerb</p>
+                </button>
+                <button onclick="setTheme('recruiting')" id="btn-recruiting" class="card-hover bg-white p-5 rounded-xl border-2 border-transparent shadow-sm text-left group">
+                    <div class="text-2xl mb-2">🤝 Thema 2</div>
+                    <h3 class="font-bold text-stone-800">Recruiting & Ops</h3>
+                    <p class="text-xs text-stone-500 mt-1">Interne Taskforce</p>
+                </button>
+                <button onclick="setTheme('pm')" id="btn-pm" class="card-hover bg-white p-5 rounded-xl border-2 border-transparent shadow-sm text-left group">
+                    <div class="text-2xl mb-2">🔥 Thema 3</div>
+                    <h3 class="font-bold text-stone-800">PM & Eskalation</h3>
+                    <p class="text-xs text-stone-500 mt-1">Krise & Go-Live</p>
+                </button>
+                <button onclick="setTheme('tech')" id="btn-tech" class="card-hover bg-white p-5 rounded-xl border-2 border-transparent shadow-sm text-left group">
+                    <div class="text-2xl mb-2">💻 Thema 4</div>
+                    <h3 class="font-bold text-stone-800">SAP Dev & Basis</h3>
+                    <p class="text-xs text-stone-500 mt-1">Performance & Code</p>
+                </button>
+            </div>
+
+            <!-- Detail Display -->
+            <div class="bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden ring-1 ring-black/5" id="context-container">
+                <div class="bg-stone-100 px-6 py-4 border-b border-stone-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                         <span class="text-xs font-bold text-orange-600 uppercase tracking-wider block mb-1">Dein Szenario</span>
+                         <h4 id="scenario-title" class="text-lg font-bold text-stone-800">Bitte Thema wählen...</h4>
+                    </div>
+                    <button onclick="copyText('scenario-text')" class="text-xs bg-white border border-stone-300 hover:bg-stone-50 text-stone-600 px-3 py-2 rounded flex items-center gap-1 transition-colors font-medium whitespace-nowrap">
+                        📋 Text kopieren
+                    </button>
+                </div>
+                <div class="p-8 space-y-6">
+                    <div>
+                        <strong class="block text-stone-700 text-sm mb-2">Die Situation:</strong>
+                        <p id="scenario-desc" class="text-stone-600 leading-relaxed">Bitte wähle oben einen Themenstrang aus, um die Details zu sehen.</p>
+                    </div>
+                    
+                    <div>
+                        <strong class="block text-stone-700 text-sm mb-2">Dein Material (zum Kopieren in die KI):</strong>
+                        <div class="bg-stone-900 text-stone-100 p-5 rounded-lg font-mono text-sm overflow-x-auto code-block whitespace-pre-wrap leading-relaxed shadow-inner" id="scenario-text">...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-stone-200">
+
+        <!-- ÜBUNG 1 -->
+        <section id="ex1" class="scroll-mt-24">
+            <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+                
+                <h3 class="text-2xl font-bold text-stone-800 flex items-center gap-3 mb-6">
+                    <span class="step-badge">Übung 1</span> Der einfache Prompt
+                </h3>
+
+                <!-- PART 1: Zero Shot -->
+                <div class="mb-12">
+                    <h4 class="text-lg font-bold text-stone-700 mb-4 border-b pb-2">Teil 1: Der einfache Prompt (Zero-Shot)</h4>
+                    
+                    <div class="box-task">
+                        <span class="label-task">Ziel & Aufgabe</span>
+                        <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Sehen, was die KI ohne viel Anleitung liefert und ein erstes Gefühl für die Interaktion bekommen.</p>
+                        <p class="text-stone-700"><strong>Aufgabe:</strong> Kopiere dein Text-Material (von oben) in das Chatfenster. Stelle darunter eine einfache, direkte Frage oder Anweisung an die KI.</p>
+                    </div>
+
+                    <div class="cs-box">
+                        <div class="cs-title">⚡ Cheat Sheet: Zero-Shot</div>
+                        <p class="text-sm text-stone-600">Direkte Anweisung ohne Beispiele. Gut für Wissensfragen, aber oft vage im Format.</p>
+                    </div>
+
+                    <div class="box-prompt">
+                        <div class="box-prompt-header">
+                            <span class="label-prompt">💡 Prompt-Idee (Teil 1)</span>
+                            <div class="box-prompt-actions">
+                                <button onclick="openInWebUI('prompt-zero', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="copyText('prompt-zero')" class="btn-copy">📋 Kopieren</button>
+                            </div>
+                        </div>
+                        <div class="box-prompt-content" id="prompt-zero">...</div>
+                    </div>
+                </div>
+
+                <!-- PART 2: Few Shot -->
+                <div>
+                    <h4 class="text-lg font-bold text-stone-700 mb-4 border-b pb-2">Teil 2: Der Few-Shot-Prompt</h4>
+                    
+                    <div class="box-task">
+                        <span class="label-task">Ziel & Aufgabe</span>
+                        <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Die Qualität steuern, indem man der KI Beispiele gibt (zeigen statt nur sagen).</p>
+                        <p class="text-stone-700"><strong>Aufgabe:</strong> Nimm deinen einfachen Prompt aus Teil 1 und erweitere ihn um ein oder zwei Beispiele (die "Shots"). Gib der KI ein klares Beispiel für Input und den perfekten Output.</p>
+                    </div>
+
+                    <div class="cs-box">
+                        <div class="cs-title">⚡ Cheat Sheet: Few-Shot</div>
+                        <p class="text-sm text-stone-600">Ideal für formatkonsistente Aufgaben. Muster: <em>"Input A -> Output A. Input B -> Output B. Input Neu -> ?"</em></p>
+                    </div>
+
+                    <div class="box-prompt">
+                        <div class="box-prompt-header">
+                            <span class="label-prompt">💡 Prompt-Idee (Teil 2 - Few-Shot)</span>
+                            <div class="box-prompt-actions">
+                                <button onclick="openInWebUI('prompt-few', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="copyText('prompt-few')" class="btn-copy">📋 Kopieren</button>
+                            </div>
+                        </div>
+                        <div class="box-prompt-content" id="prompt-few">...</div>
+                    </div>
+
+                    <div class="box-reflection">
+                        <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                        <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                            <li>Wie stark unterschieden sich die Ergebnisse zwischen deinem ersten, einfachen Prompt und dem Few-Shot-Prompt?</li>
+                            <li>In welchen Aspekten war die zweite Antwort (mit Beispiel) besser? (z.B. Format, Tonalität, Inhalt)</li>
+                            <li>Wie hat sich der Aufwand verändert? War es schneller, ein Beispiel zu geben, als die erste Antwort manuell zu korrigieren?</li>
+                            <li>Welche wiederkehrende Aufgabe in deiner Abteilung hat ein festes Format, bei der diese "Beispiel-Technik" sofort nützlich wäre?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜBUNG 2 -->
+        <section id="ex2" class="scroll-mt-24">
+            <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-purple-500"></div>
+                <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-3">
+                    <span class="step-badge">Übung 2</span> Der Persona-Prompt
+                </h3>
+                
+                <div class="box-task">
+                    <span class="label-task">Ziel & Aufgabe</span>
+                    <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Die Qualität der Antwort durch die Zuweisung einer Rolle drastisch verbessern.</p>
+                    <p class="text-stone-700"><strong>Aufgabe:</strong> Nimm deinen Prompt aus Übung 1 und stelle ihm eine klare <strong>Rolle</strong> voran.</p>
+                </div>
+
+                <div class="cs-box">
+                    <div class="cs-title">🎭 Cheat Sheet: Persona Prompting</div>
+                    <p class="text-sm text-stone-700">Weise der KI eine Rolle zu (z.B. Beruf, Persönlichkeit). Dies steuert <strong>Ton, Stil und Fokus</strong>.</p>
+                </div>
+
+                <div class="box-prompt">
+                    <div class="box-prompt-header">
+                        <span class="label-prompt">💡 Prompt-Idee</span>
+                        <div class="box-prompt-actions">
+                            <button onclick="openInWebUI('prompt-persona', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="copyText('prompt-persona')" class="btn-copy">📋 Kopieren</button>
+                        </div>
+                    </div>
+                    <div class="box-prompt-content" id="prompt-persona">...</div>
+                </div>
+
+                <div class="box-reflection">
+                    <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                    <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                        <li>Was war die auffälligste Veränderung in der KI-Antwort, nachdem du eine Rolle zugewiesen hast?</li>
+                        <li>Welche Persona hat für dein spezifisches Thema das beste Ergebnis geliefert und warum?</li>
+                        <li>Kannst du dir eine Situation vorstellen, in der die Wahl einer falschen Persona zu einem problematischen Ergebnis führt?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜBUNG 3 -->
+        <section id="ex3" class="scroll-mt-24">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+                <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+                    <span class="step-badge">Übung 3</span> Chain-of-Thought (CoT)
+                </h3>
+                
+                <div class="box-task">
+                    <span class="label-task">Ziel & Aufgabe</span>
+                    <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Komplexe Aufgaben mit CoT lösen und iterativ verbessern.</p>
+                    <p class="text-stone-700 mb-2"><strong>Aufgabe 1 (CoT):</strong> Formuliere einen Prompt, der die KI anweist, dein Problem <strong>Schritt für Schritt</strong> zu analysieren.</p>
+                    <p class="text-stone-700"><strong>Aufgabe 2 (Iteration):</strong> Analysiere die Antwort. Ist sie perfekt? Formuliere eine präzise Folge-Anweisung.</p>
+                </div>
+
+                <div class="cs-box">
+                    <div class="cs-title">🔗 Cheat Sheet: Chain-of-Thought</div>
+                    <p class="text-sm text-stone-700">Fordere die KI auf, "Schritt für Schritt" vorzugehen. Wichtig für komplexe Logik.</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="box-prompt">
+                        <div class="box-prompt-header">
+                            <span class="label-prompt">💡 Schritt 1: CoT Analyse</span>
+                            <div class="box-prompt-actions">
+                                <button onclick="openInWebUI('cot-prompt', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="copyText('cot-prompt')" class="btn-copy">📋 Kopieren</button>
+                            </div>
+                        </div>
+                        <div class="box-prompt-content" id="cot-prompt">...</div>
+                    </div>
+
+                    <div class="box-prompt">
+                        <div class="box-prompt-header">
+                            <span class="label-prompt">💡 Schritt 2: Iteration (Folge-Prompt)</span>
+                            <div class="box-prompt-actions">
+                                <!-- Removed OpenWebUI button for iteration as requested -->
+                                <button onclick="copyText('iteration-prompt')" class="btn-copy">📋 Kopieren</button>
+                            </div>
+                        </div>
+                        <div class="box-prompt-content" id="iteration-prompt">...</div>
+                    </div>
+                </div>
+
+                <div class="box-reflection">
+                    <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                    <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                        <li>Hat die "Schritt-für-Schritt"-Anweisung zu einer besser strukturierten Antwort geführt?</li>
+                        <li>Wie viele "Runden" (Iterationen) hast du gebraucht, um mit dem Ergebnis zufrieden zu sein?</li>
+                        <li>Was lernen wir daraus: Ist KI eher ein Werkzeug, das man anweist, oder ein Assistent, mit dem man zusammenarbeitet?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜBUNG 4 -->
+        <section id="ex4" class="scroll-mt-24">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-stone-700"></div>
+                <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+                    <span class="step-badge">Übung 4</span> Wissen bereitstellen (Grounding)
+                </h3>
+
+                <div class="box-task">
+                    <span class="label-task">Ziel & Aufgabe</span>
+                    <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Halluzinationen vermeiden. Die KI soll ihre Antwort <strong>nur</strong> auf deinen Text stützen.</p>
+                    <p class="text-stone-700"><strong>Aufgabe:</strong> Kopiere dein Text-Material erneut. Formuliere eine Frage, die sich <strong>direkt</strong> darauf bezieht. Weise die KI an, ausschließlich diese Quelle zu verwenden.</p>
+                </div>
+
+                <div class="box-prompt">
+                    <div class="box-prompt-header">
+                        <span class="label-prompt">💡 Prompt-Idee (Grounding)</span>
+                        <div class="box-prompt-actions">
+                            <button onclick="openInWebUI('grounding-prompt', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="copyText('grounding-prompt')" class="btn-copy">📋 Kopieren</button>
+                        </div>
+                    </div>
+                    <div class="box-prompt-content" id="grounding-prompt">...</div>
+                </div>
+
+                <div class="box-reflection">
+                    <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                    <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                        <li>Hat die KI die Antwort korrekt und ohne zusätzliche Informationen im bereitgestellten Text gefunden?</li>
+                        <li>Warum ist "ausschließlich basierend auf" so entscheidend bei sensiblen Berichten oder internen Daten?</li>
+                        <li>Welche neuen Möglichkeiten eröffnet diese Technik (z.B. Zusammenfassungen langer Berichte, Richtlinien-Abfragen)?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜBUNG 5 -->
+        <section id="ex5" class="scroll-mt-24 space-y-10">
+            <!-- Part 1: Builder -->
+            <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
+                <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-3">
+                    <span class="step-badge">Übung 5</span> K.R.A.F.T.
+                </h3>
+
+                <div class="box-task">
+                    <span class="label-task">Ziel & Aufgabe (Teil 1)</span>
+                    <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Einen vollständigen Power-Prompt erstellen, der ein <strong>konkretes Ausgabeformat</strong> erzwingt.</p>
+                    <p class="text-stone-700"><strong>Aufgabe:</strong> Baue deinen Prompt aus Übung 3 zu einem vollständigen K.R.A.F.T.-Prompt aus.</p>
+                </div>
+
+                <div class="cs-box mb-6">
+                    <div class="cs-title">🏗️ Framework Checkliste</div>
+                    <div class="grid grid-cols-5 gap-2 text-center text-xs font-bold text-stone-700">
+                        <div class="bg-white p-2 rounded border border-stone-200">[K]ontext</div>
+                        <div class="bg-white p-2 rounded border border-stone-200">[R]olle</div>
+                        <div class="bg-white p-2 rounded border border-stone-200">[A]ufgabe</div>
+                        <div class="bg-white p-2 rounded border border-stone-200">[F]ormat</div>
+                        <div class="bg-white p-2 rounded border border-stone-200">[T]on</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div class="space-y-2 col-span-1">
+                        <button onclick="updateKraft('k')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent active-kraft bg-stone-50 border-orange-500 text-stone-800" data-letter="k">[K]ontext</button>
+                        <button onclick="updateKraft('r')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="r">[R]olle</button>
+                        <button onclick="updateKraft('a')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="a">[A]ufgabe</button>
+                        <button onclick="updateKraft('f')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="f">[F]ormat</button>
+                        <button onclick="updateKraft('t')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="t">[T]on</button>
+                    </div>
+
+                    <div class="col-span-2 bg-stone-50 rounded-xl border border-stone-200 overflow-hidden flex flex-col min-h-[300px]">
+                        <div class="bg-stone-100 p-4 flex justify-between items-center border-b border-stone-200">
+                            <span class="text-stone-500 font-mono text-sm">kraft_builder</span>
+                            <span class="text-orange-600 font-bold tracking-widest" id="kraft-letter-display">KONTEXT</span>
+                        </div>
+                        <div class="p-8 flex-grow flex flex-col justify-center items-center text-center">
+                            <div id="kraft-content" class="text-xl font-serif text-stone-800 leading-relaxed">...</div>
+                            <p id="kraft-explanation" class="mt-6 text-stone-500 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-stone-100">...</p>
+                        </div>
+                        <div class="bg-white p-4 border-t border-stone-200 text-right flex justify-between items-center">
+                            <span class="text-xs text-stone-400 font-mono">Theme: <span id="kraft-theme-badge" class="text-stone-600 font-bold">...</span></span>
+                            <div class="flex gap-2">
+                                <button onclick="openKraftInWebUI('azure-gpt-5.1')" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="copyKraft()" class="btn-copy">📋 Kopieren</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teil 2: Optimizer -->
+                <div class="border-t border-stone-200 pt-8 mt-8">
+                    <h4 class="text-lg font-bold text-stone-700 mb-4">Teil 2: Metaprompting (Optimizer)</h4>
+                    
+                    <div class="box-task">
+                        <span class="label-task">Ziel & Aufgabe</span>
+                        <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Einen K.R.A.F.T Prompt mit Metaprompting automatisch erstellen und verbessern lassen.</p>
+                        <p class="text-stone-700"><strong>Aufgabe:</strong> Nutze den Prompt Optimizer unten, um aus deinem Prompt aus Übung 3 einen perfekten K.R.A.F.T. Prompt zu entwickeln.</p>
+                    </div>
+
+                    <div class="box-prompt">
+                        <div class="box-prompt-header">
+                            <span class="label-prompt">🛠️ Prompt Optimizer (Meta-Prompt)</span>
+                            <div class="box-prompt-actions">
+                                <!-- OpenWebUI button removed for Optimizer -->
+                                <button onclick="copyText('optimizer-text')" class="btn-copy">📋 Kopieren</button>
+                            </div>
+                        </div>
+                        <div class="box-prompt-content" id="optimizer-text">
+**ROLE:** Du agierst als Senior Prompt-Engineering-Experte mit tiefgreifender Erfahrung in den Frameworks K.R.A.F.T., Chain-of-Thought und Few-Shot-Techniken sowie der Erstellung von Bewertungsrubriken. Deine Aufgabe ist es, Prompts systematisch zu analysieren und zu verbessern.
+
+**AUFGABE:** Analysiere und verbessere den untenstehenden `INPUT_PROMPT` methodisch. Deine Antwort muss exakt den folgenden Schritten und Formatierungsvorgaben entsprechen.
+
+**SCHRITTE (Strukturiere deine Antwort exakt nach diesen nummerierten Punkten):**
+
+**1) KURZZUSAMMENFASSUNG** Fasse den Zweck des `INPUT_PROMPT` in maximal 25 Wörtern zusammen.
+
+**2) DIAGNOSTIK**
+
+- **2.1) Schwächen:** Identifiziere Schwächen in den Kategorien: `Klarheit`, `Kontext`, `Struktur`, `Spezifität`, `Format`. Gib pro Kategorie 1-3 konkrete Stichpunkte an.
+- **2.2) Bewertungsrubrik:** Bewerte den `INPUT_PROMPT` auf einer Skala von 0 (mangelhaft) bis 5 (exzellent) für die folgenden Kriterien. Begründe jede Bewertung in einem Satz.
+  - Klarheit:
+  - Kontext:
+  - Struktur:
+  - Spezifität:
+  - Erfolgskriterien:
+
+**3) KONKRETE VERBESSERUNGSMASSNAHMEN** Leite aus jeder in Schritt 2.1 identifizierten Schwäche 1-2 klare, umsetzbare Handlungsempfehlungen ab (z.B. "Füge ein Negativbeispiel hinzu", "Definiere das Zielpublikum explizit").
+
+**4) K.R.A.F.T.-OPTIMIERTE HAUPTVERSION** Formuliere den Prompt vollständig nach dem K.R.A.F.T.-Framework neu. Fülle jedes Feld klar und prägnant aus.
+
+- **K (Kontext):** [Hintergrundinformationen, die die KI benötigt, um die Situation zu verstehen]
+- **R (Rolle):** [Die zugewiesene Persona oder der Experte, der die KI sein soll]
+- **A (Aufgabe):** [Die genaue, unmissverständliche Tätigkeit, die die KI ausführen soll]
+- **F (Format):** [Genaue Vorgaben für die Struktur der Ausgabe, z.B. "Stichpunktliste mit drei Punkten", "E-Mail mit Betreff und Anrede"]
+- **T (Ton):** [Der sprachliche und emotionale Tonfall der Antwort, z.B. "professionell", "sachlich", "beruhigend"]
+
+**5) DREI PRODUKTIONSFERTIGE VARIANTEN** Generiere drei sofort kopier- und nutzbare Versionen des optimierten Prompts. Formatiere die Varianten als Markdown innerhalb von Codeblöcken mit Überschriften über den Blöcken. Achte auf richtige Formatierung und Zeilenumbrüche.
+
+- **5a) Schnellfix:** Eine extrem kompakte Version (1-2 Sätze), die die wichtigste Verbesserung umsetzt.
+- **5b) Produktiv:** Die ausführliche, robuste Hauptversion, bereit für den direkten Einsatz. Basiert auf der K.R.A.F.T.-Version.
+- **5c) Lehrbuchversion:** Eine Version mit Kommentaren, die erklärt, warum bestimmte Teile des Prompts wichtig sind. (Achte auf eine verständliche Formatierung)
+
+**6) ÄNDERUNGEN** Liste die wichtigsten Änderungen zwischen dem `INPUT_PROMPT` und der "Produktiv"-Variante (5b) auf.
+
+- **Entfernt:** [Elemente, die gelöscht wurden]
+- **Hinzugefügt:** [Elemente, die neu sind]
+- **Umformuliert:** [Elemente, die präzisiert oder neu formuliert wurden]
+
+**7) QUALITÄTS-SCORE URSPRUNG** Bewerte die "Ursprungs"-Version auf einer Skala von 1-10 und begründe den Score kurz (1-2 Sätze).
+
+**8) QUALITÄTS-SCORE VERSION PRODUKTIV** Bewerte die "Produktiv"-Version (5b) auf einer Skala von 1-10 und begründe den Score kurz (1-2 Sätze).
+
+**9) ANNAHMEN** Falls im `INPUT_PROMPT` kritische Informationen fehlten, die du für die Optimierung ergänzen musstest, liste hier die Annahmen auf, die du getroffen hast. Markiere sie als `[Annahme]`.
+
+**VORGABEN FÜR DEINE ANTWORT:**
+
+- Halte dich strikt an die vorgegebene Nummerierung und Struktur.
+- Stelle keine Rückfragen an den Nutzer. Triff stattdessen fundierte Annahmen und deklariere sie unter Punkt 9.
+- Die Ausgabesprache entspricht der Sprache des `INPUT_PROMPT`. Ist keine Sprache erkennbar, verwende Deutsch.
+
+**INPUT_PROMPT:**
+[HIER DEINEN PROMPT EINFÜGEN]</div>
+                    </div>
+                </div>
+
+                <div class="box-reflection">
+                    <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                    <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                        <li>Wie hat die Nutzung der K.R.A.F.T.-Struktur deinen Denkprozess verändert?</li>
+                        <li>Welcher der fünf K.R.A.F.T.-Buchstaben hatte den größten positiven Einfluss auf das Ergebnis?</li>
+                        <li>Wie könnte ein Werkzeug wie der "Prompt Optimizer" helfen, die Qualität langfristig zu sichern?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜBUNG 6 -->
+        <section id="ex6" class="scroll-mt-24">
+            <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-teal-500"></div>
+                <h3 class="text-xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+                    <span class="step-badge">Übung 6</span> Die Kraft der Bilder
+                </h3>
+
+                <div class="box-task">
+                    <span class="label-task">Ziel & Aufgabe</span>
+                    <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Lernen, wie man abstrakte Business-Themen in konkrete, visuelle Anweisungen übersetzt.</p>
+                    <p class="text-stone-700"><strong>Aufgabe:</strong> Entwickle für deinen Themenstrang einen detaillierten Bild-Prompt, der die Kernbotschaft visuell auf den Punkt bringt.</p>
+                </div>
+                
+                <!-- Special Visual Prompt Box -->
+                <div class="bg-stone-50 border border-stone-200 rounded-xl overflow-hidden mb-6">
+                    <div class="bg-stone-100 px-4 py-2 border-b border-stone-200 flex justify-between items-center">
+                        <span class="label-prompt mb-0">🎨 Bild-Prompt Struktur</span>
+                        <div class="box-prompt-actions">
+                            <button onclick="openImgPromptInWebUI('google_gemini.gemini-2.5-flash-image-preview')" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="copyImgPrompt()" class="btn-copy">📋 Alles Kopieren</button>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div>
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Ziel</span>
+                            <p class="text-stone-900 font-medium text-sm" id="img-ziel">...</p>
+                        </div>
+                        <div class="border-l-4 border-stone-300 pl-4 py-1">
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Hauptmotiv</span>
+                            <p class="text-stone-900 font-medium" id="img-motiv">...</p>
+                        </div>
+                        <div class="border-l-4 border-stone-300 pl-4 py-1">
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Handlung</span>
+                            <p class="text-stone-900 text-sm leading-relaxed" id="img-handlung">...</p>
+                        </div>
+                        <div class="border-l-4 border-stone-300 pl-4 py-1">
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Umgebung</span>
+                            <p class="text-stone-900 text-sm leading-relaxed" id="img-umgebung">...</p>
+                        </div>
+                        <div class="border-l-4 border-stone-300 pl-4 py-1">
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Stil</span>
+                            <p class="text-stone-900 text-sm leading-relaxed" id="img-stil">...</p>
+                        </div>
+                        <div class="border-l-4 border-stone-300 pl-4 py-1">
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Beleuchtung</span>
+                            <p class="text-stone-900 text-sm leading-relaxed" id="img-beleuchtung">...</p>
+                        </div>
+                        <div class="border-l-4 border-stone-300 pl-4 py-1">
+                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Details</span>
+                            <p class="text-stone-900 text-sm leading-relaxed" id="img-details">...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box-reflection">
+                    <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                    <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                        <li>Was war die größte Herausforderung dabei, dein Business-Thema in eine visuelle Beschreibung zu übersetzen?</li>
+                        <li>Welches Element (z.B. Stil, Beleuchtung) hat das Ergebnis am stärksten beeinflusst?</li>
+                        <li>Für welche Art von Kommunikation bei Aequitas könntest du dir KI-Bilder vorstellen?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÜBUNG 7 -->
+        <section id="ex7" class="scroll-mt-24">
+            <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm flex flex-col relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-pink-500"></div>
+                <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2 mb-6">
+                    <span class="step-badge">Übung 7</span> System & Parameter
+                </h3>
+
+                <div class="box-task">
+                    <span class="label-task">Ziel & Aufgabe</span>
+                    <p class="text-stone-700 mb-2"><strong>Ziel:</strong> Verstehen, wie man das Verhalten der KI dauerhaft ändert (System Prompt) und wie man "Kreativität" steuert.</p>
+                    <p class="text-stone-700"><strong>Aufgabe:</strong> Entwickle einen System Prompt und wähle die passenden Parameter.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <div class="chart-container" style="height: 200px;">
+                            <div id="gaugeChart"></div>
+                        </div>
+                        
+                        <div class="box-prompt mt-4">
+                            <div class="box-prompt-header">
+                                <span class="label-prompt">⚙️ System Prompt</span>
+                                <div class="box-prompt-actions">
+                                    <!-- OpenWebUI removed for System Prompt -->
+                                    <button onclick="copyText('sys-prompt')" class="btn-copy">📋 Kopieren</button>
+                                </div>
+                            </div>
+                            <div class="box-prompt-content" id="sys-prompt">...</div>
+                        </div>
+                    </div>
+
+                    <!-- Cheat Sheet Table -->
+                    <div class="overflow-x-auto">
+                         <div class="cs-title">🎛️ Cheat Sheet: Parameter</div>
+                        <table class="w-full text-xs text-left text-stone-600 border border-stone-200 rounded-lg overflow-hidden">
+                            <thead class="bg-stone-100 text-stone-700 font-bold">
+                                <tr>
+                                    <th class="p-2 border-b">Parameter</th>
+                                    <th class="p-2 border-b">Wann hoch?</th>
+                                    <th class="p-2 border-b">Wann niedrig?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-2 font-bold">Temperature</td>
+                                    <td class="p-2">Brainstorming, Story</td>
+                                    <td class="p-2">Fakten, Code</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-2 font-bold">Frequency Penalty</td>
+                                    <td class="p-2">Essays, Vielfalt</td>
+                                    <td class="p-2">Syntax, Übersetzung</td>
+                                </tr>
+                                 <tr class="border-b">
+                                    <td class="p-2 font-bold">Top P</td>
+                                    <td class="p-2">Breites Denken</td>
+                                    <td class="p-2">Präzise Antworten</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 font-bold">Reasoning Effort</td>
+                                    <td class="p-2">Komplexe Logik</td>
+                                    <td class="p-2">Einfache Fragen</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="box-reflection">
+                    <span class="label-reflection">💬 Reflektionsfragen (Gruppe)</span>
+                    <ul class="list-disc list-inside text-sm text-stone-700 space-y-2">
+                        <li>Wie unterscheidet sich die Antwort bei Temperatur 0 gegenüber Temperatur 1+?</li>
+                        <li>In welchen Szenarien (z.B. Coding vs. Brainstorming) wäre ein fester System-Prompt hilfreich?</li>
+                        <li>Warum ist hohe Temperatur ("Kreativität") gefährlich bei Fakten-Abfragen?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHEAT SHEET -->
+        <section id="cheatsheet" class="scroll-mt-24 pt-12 border-t-2 border-dashed border-stone-300">
+            <div class="bg-white rounded-3xl shadow-xl border border-stone-200 overflow-hidden">
+                <div class="bg-stone-800 px-8 py-6 text-white flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold">Prompt Engineering Cheat Sheet</h2>
+                        <p class="text-stone-400 text-sm">Die komplette Referenz für den Workshop.</p>
+                    </div>
+                    <div class="text-4xl">📖</div>
+                </div>
+                <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+                    
+                    <!-- Col 1 -->
+                    <div class="space-y-8">
+                        <!-- Grundprinzipien -->
+                        <div>
+                            <h3 class="text-lg font-bold text-orange-600 border-b-2 border-orange-100 pb-2 mb-4">Grundprinzipien exzellenter Prompts</h3>
+                            <ol class="list-decimal list-inside space-y-3 text-sm text-stone-700 font-bold">
+                                <li>
+                                    Seien Sie klar und spezifisch.
+                                    <ul class="list-none pl-5 mt-1 text-stone-600 font-normal space-y-1">
+                                        <li><span class="text-red-500 font-bold">✗</span> Schlecht: "Schreibe was über unsere Netze."</li>
+                                        <li><span class="text-green-600 font-bold">✓</span> Gut: "Erstelle eine Zusammenfassung der Herausforderungen bei der Instandhaltung unseres Stromnetzes für einen neuen Mitarbeiter im technischen Bereich."</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Geben Sie Kontext.
+                                    <p class="font-normal mt-1 text-stone-600 pl-5">Die KI kennt keine internen Details. Füttern Sie sie mit den nötigen Hintergrundinformationen.</p>
+                                </li>
+                                <li>
+                                    Definieren Sie die Zielgruppe.
+                                    <p class="font-normal mt-1 text-stone-600 pl-5">Für wen ist die Antwort bestimmt? (z.B. Management, Kunden, Techniker).</p>
+                                </li>
+                                <li>
+                                    Fordern Sie ein Format an.
+                                    <p class="font-normal mt-1 text-stone-600 pl-5">Sparen Sie sich Nacharbeit, indem Sie das gewünschte Ergebnisformat (Stichpunkte, E-Mail etc.) direkt anfordern.</p>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <!-- K.R.A.F.T. -->
+                        <div>
+                            <h3 class="text-lg font-bold text-orange-600 border-b-2 border-orange-100 pb-2 mb-4">Das K.R.A.F.T.-Framework</h3>
+                            <p class="text-sm text-stone-600 mb-3">Nutzen Sie diese fünf Bausteine als Checkliste für jeden wichtigen Prompt.</p>
+                            <ul class="space-y-2 text-sm text-stone-700">
+                                <li><strong class="text-stone-900">[K] Kontext:</strong> Wichtige Hintergrundinfos für die KI (z.B. Projektdetails).</li>
+                                <li><strong class="text-stone-900">[R] Rolle:</strong> Wer soll die KI sein? (z.B. HR-Manager, IT-Experte).</li>
+                                <li><strong class="text-stone-900">[A] Aufgabe:</strong> Was soll die KI genau tun? (z.B. analysieren, entwerfen).</li>
+                                <li><strong class="text-stone-900">[F] Format:</strong> Wie soll die Ausgabe aussehen? (z.B. Stichpunkte, E-Mail).</li>
+                                <li><strong class="text-stone-900">[T] Ton:</strong> In welchem Stil soll die KI schreiben? (z.B. formell, sachlich).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Col 2 -->
+                    <div class="space-y-8">
+                         <!-- Techniken -->
+                         <div>
+                            <h3 class="text-lg font-bold text-orange-600 border-b-2 border-orange-100 pb-2 mb-4">Die vier wichtigsten Praxis-Techniken</h3>
+                            <div class="space-y-6 text-sm">
+                                <div>
+                                    <strong class="text-stone-900 block text-base mb-1">1. Persona Prompting</strong>
+                                    <p class="text-stone-600 mb-2">Weisen Sie der KI eine Rolle zu (z.B. Beruf, Persönlichkeit). Dies steuert Ton, Stil und Fokus der Antwort. Die KI nutzt dann das Wissen und die typische Ausdrucksweise dieser Rolle.</p>
+                                    <div class="bg-stone-50 p-2 rounded border border-stone-200 text-xs">
+                                        <strong>Anwendungsbeispiel:</strong> "Handle als Kommunikationsexperte der Stadtwerke Güstrow und formuliere eine Pressemitteilung zur Ankündigung unserer neuen Solarkampagne."
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong class="text-stone-900 block text-base mb-1">2. Wissen bereitstellen</strong>
+                                    <p class="text-stone-600 mb-2">Geben Sie der KI einen Text (Bericht, E-Mail etc.) und weisen Sie sie an, ihre Antwort <em>nur</em> darauf zu stützen. Das verhindert "Halluzinationen" und die Nutzung von Allgemeinwissen.</p>
+                                    <div class="bg-stone-50 p-2 rounded border border-stone-200 text-xs">
+                                        <strong>Anwendungsbeispiel:</strong> "Basierend <em>ausschließlich</em> auf dem folgenden Bericht: Fasse die identifizierten Kernrisiken für das Projekt 'Netzausbau 2026' in drei Stichpunkten zusammen. [Hier den Berichtstext einfügen]"
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong class="text-stone-900 block text-base mb-1">3. Chain-of-Thought / CoT</strong>
+                                    <p class="text-stone-600 mb-2">Fordern Sie die KI bei komplexen Aufgaben auf, schrittweise vorzugehen (Gehe Schritt für Schritt vor...). Das führt zu logischeren und besseren Ergebnissen, besonders bei Analysen oder Planungen.</p>
+                                    <div class="bg-stone-50 p-2 rounded border border-stone-200 text-xs">
+                                        <strong>Anwendungsbeispiel:</strong> "Analysiere die Ursachen für den gestiegenen Wasserverbrauch im Sektor Nord. Gehe dabei Schritt für Schritt vor: 1. Liste mögliche technische Ursachen auf. 2. Gib eine Empfehlung für die nächsten Prüfschritte."
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong class="text-stone-900 block text-base mb-1">4. Few-Shot Prompting</strong>
+                                    <p class="text-stone-600 mb-2">Geben Sie der KI 2-3 Beispiele für die gewünschte Aufgabe und das exakte Format. Die KI erkennt das Muster und wendet es an. Ideal für wiederkehrende, formatkonsistente Aufgaben wie Datenextraktion.</p>
+                                    <div class="bg-stone-50 p-2 rounded border border-stone-200 text-xs">
+                                        <strong>Anwendungsbeispiel:</strong> "Kategorisiere Kunden-E-Mails. Beispiel: 'Ich möchte meinen Abschlag ändern.' -> Abschlagsänderung. 'Mein Zählerstand ist 12345.' -> Zählerstand. Kategorisiere nun: 'Wann wird meine Straße an die Fernwärme angeschlossen?' ->"
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dialog -->
+                        <div>
+                            <h3 class="text-lg font-bold text-orange-600 border-b-2 border-orange-100 pb-2 mb-4">Der Dialog: Prompten als Prozess</h3>
+                            <p class="text-sm text-stone-600 mb-3">Ihr erster Prompt ist selten final. Die besten Ergebnisse entstehen durch schrittweise Verfeinerung.</p>
+                            <ul class="list-disc list-inside space-y-2 text-sm text-stone-700">
+                                <li><strong>Analysieren:</strong> Ist die Antwort gut? Was fehlt (Kontext, Klarheit)?</li>
+                                <li><strong>Verfeinern:</strong> Passen Sie den ursprünglichen Prompt an (Rolle, Format etc.).</li>
+                                <li><strong>Nachfragen:</strong> Bitten Sie die KI im Dialog um Anpassungen.
+                                    <ul class="list-none pl-5 mt-1 text-stone-600 italic">
+                                        <li>"Das ist ein guter Anfang, aber formuliere den zweiten Absatz bitte einfacher."</li>
+                                        <li>"Fasse deine Antwort nun in drei Kernaussagen für das Management zusammen."</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Parameter -->
+                        <div>
+                            <h3 class="text-lg font-bold text-orange-600 border-b-2 border-orange-100 pb-2 mb-4">Wichtige Parameter</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-left text-stone-600 border border-stone-200 rounded-lg">
+                                    <thead class="bg-stone-100 text-stone-800 font-bold">
+                                        <tr>
+                                            <th class="p-2 border-b">Parameter / Funktion</th>
+                                            <th class="p-2 border-b">Wann hoch?</th>
+                                            <th class="p-2 border-b">Wann niedrig?</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b">
+                                            <td class="p-2">
+                                                <strong class="block text-stone-900">Temperature</strong>
+                                                Steuert Zufall & Kreativität.
+                                            </td>
+                                            <td class="p-2">Brainstorming, Storytelling, Marketing.</td>
+                                            <td class="p-2">Code, Faktenabfrage, Datenextraktion.</td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="p-2">
+                                                <strong class="block text-stone-900">Top P</strong>
+                                                Begrenzt Wortwahl auf die Besten.
+                                            </td>
+                                            <td class="p-2">(Alternative zu Temp) Breites Denken.</td>
+                                            <td class="p-2">Präzise, deterministische Antworten.</td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="p-2">
+                                                <strong class="block text-stone-900">Frequency Penalty</strong>
+                                                Bestraft Wortwiederholungen.
+                                            </td>
+                                            <td class="p-2">Schreiben von Essays, Mails, Blogs.</td>
+                                            <td class="p-2">Code & Syntax, Übersetzungen.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2">
+                                                <strong class="block text-stone-900">Reasoning Effort</strong>
+                                                Steuert "Denkzeit" vor Antwort.
+                                            </td>
+                                            <td class="p-2">Komplexe Logik, Mathe, Architektur-Planung.</td>
+                                            <td class="p-2">Chat, einfache Fragen, Textzusammenfassung.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; 2025 Aequitas. Interne Prompting Schulung.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        function openInWebUI(elementId, modelName, includeMaterial = false) {
+            let text = document.getElementById(elementId).innerText;
+            
+            if (includeMaterial) {
+                const material = workshopData[currentTheme].material;
+                text = material + "\n\n" + text;
+            }
+            
+            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(text)}&model=${modelName}`;
+            window.open(url, '_blank');
+        }
+
+        function openKraftInWebUI(modelName) {
+            const d = workshopData[currentTheme].kraft;
+            const material = workshopData[currentTheme].material;
+            const text = `${material}\n\n[K]ontext: ${d.k}\n[R]olle: ${d.r}\n[A]ufgabe: ${d.a}\n[F]ormat: ${d.f}\n[T]on: ${d.t}`;
+            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(text)}&model=${modelName}`;
+            window.open(url, '_blank');
+        }
+
+        function openImgPromptInWebUI(modelName) {
+            const d = workshopData[currentTheme].img;
+            const text = `Erstelle ein Bild:\nZiel: ${d.ziel}\nHauptmotiv: ${d.motiv}\nHandlung: ${d.handlung}\nUmgebung: ${d.umgebung}\nStil: ${d.stil}\nBeleuchtung: ${d.beleuchtung}\nDetails: ${d.details}`;
+            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(text)}&model=${modelName}`;
+            window.open(url, '_blank');
+        }
+
+        function copyImgPrompt() {
+            const d = workshopData[currentTheme].img;
+            const text = `Erstelle ein Bild:\nZiel: ${d.ziel}\nHauptmotiv: ${d.motiv}\nHandlung: ${d.handlung}\nUmgebung: ${d.umgebung}\nStil: ${d.stil}\nBeleuchtung: ${d.beleuchtung}\nDetails: ${d.details}`;
+            navigator.clipboard.writeText(text).then(() => alert("Bild-Prompt kopiert!"));
+        }
+
+        const workshopData = {
+            sales: {
+                title: "Sales & Strategy",
+                desc: "Ein aggressiver Wettbewerber hat eine neue Dienstleistung angekündigt, die euer Kerngeschäft bedroht. Du musst die strategischen Auswirkungen bewerten und Argumente vorbereiten.",
+                material: `**Pressemitteilung von NextGen-Consulting:**\n"Frankfurt, 25.09.2025 – NextGen-Consulting startet die 'SAP-Turbo-Initiative'. Ab sofort bieten wir S/4HANA-Migrationen zum garantierten Festpreis an, der 30% unter dem Marktdurchschnitt liegt. Durch den Einsatz unserer proprietären 'Auto-Code-AI' reduzieren wir den manuellen Berateraufwand um die Hälfte. Unser CEO sagt: 'Warum teure Stundenlöhne für Junior-Berater zahlen, wenn unsere KI den Code in Sekunden schreibt? Die Zeit der klassischen 'Body-Leasing'-Beratung ist vorbei.'"`,
+                zero: "Fasse die Pressemitteilung zusammen. Ist das eine Gefahr für uns als Aequitas AG?",
+                few: `Du bist ein Strategieberater.\nBeispiel Input: "Wettbewerber X senkt Preise um 10%." -> Output: "Marginaler Druck auf Preissegment C. Kein Risiko für Premium-Accounts."\n\nInput: [Pressemitteilung NextGen]\nOutput:`,
+                persona: "Handle als erfahrener Vertriebsleiter im IT-Consulting. Analysiere die Pressemitteilung. Welche 3 Gegenargumente können wir nutzen?",
+                cot: "Analysiere die Wettbewerber-Meldung Schritt für Schritt:\n1. Was ist das Versprechen?\n2. Wo ist der Haken (Qualität, Individualität)?\n3. Wie positionieren wir uns dagegen?",
+                iteration: "Gut. Formuliere daraus nun einen 'Battle-Card'-Spickzettel für unsere Sales-Kollegen.",
+                grounding: "Basierend *ausschließlich* auf der Pressemitteilung: Welchen konkreten Preisvorteil verspricht NextGen?",
+                kraft: { k: "Aggressiver Wettbewerber (NextGen) bietet Dumping-Preise.", r: "Vertriebsleiter IT-Consulting.", a: "Erstelle Battle Card.", f: "Vergleichstabelle.", t: "Selbstbewusst." },
+                img: { 
+                    ziel: "Den Unterschied zwischen billiger KI-Massenware und wertvoller Strategie visualisieren.",
+                    motiv: "Eine antike Waagschale in futuristischer Umgebung.",
+                    handlung: "Auf der linken Schale liegt ein riesiger Haufen grauer, identischer Metallwürfel (die Standard-KI), die Schale hängt tief. Auf der rechten Schale liegt ein einzelner, leuchtender, komplex geschliffener Diamant (die Strategie), der trotz seiner geringen Größe die Waage im Gleichgewicht hält.",
+                    umgebung: "Ein abstraktes, digitales 'Boardroom'-Szenario mit unscharfen Datenströmen im Hintergrund.",
+                    stil: "Hochwertiger, fotorealistischer 3D-Render, geeignet für eine Management-Präsentation.",
+                    beleuchtung: "Kühles, blaues Licht auf den Würfeln. Warmes, goldenes Licht strahlt vom Diamanten aus.",
+                    details: "Auf den grauen Würfeln steht winzig '08/15'. Der Diamant reflektiert menschliche Gesichter."
+                },
+                sys: { prompt: "Du bist ein disruptiver Strategieberater. Du hasst Standardlösungen.", temp: 1.1 }
+            },
+            recruiting: {
+                title: "Recruiting & Ops",
+                desc: "Der Beratermarkt ist leergefegt. Die Geschäftsführung will eine interne 'AI-Taskforce' gründen. Entwirf eine interne Stellenausschreibung.",
+                material: `**Interne Notiz:**\n"Profil Lead AI-Taskforce (m/w/d) – Internes Projekt: Wir brauchen jemanden aus den eigenen Reihen, der das Thema 'Generative AI' bei uns treibt.\nAufgaben: Identifikation von KI-Use-Cases, Tool-Auswahl, Schulung.\nAnforderungen: Muss Business verstehen, aber technisch fit sein. Lust, Prozesse neu zu denken."`,
+                zero: "Schreibe eine Stellenausschreibung für den AI-Lead basierend auf der Notiz.",
+                few: `Du bist HR-Texter.\nInput: "Suche Coder für Java." -> Output: "Java-Ninja gesucht! Codiere die Zukunft..."\n\nInput: [Interne Notiz]\nOutput:`,
+                persona: "Du bist Senior HR Business Partner. Formuliere die Stelle so, dass sie für einen erfahrenen Senior Consultant attraktiv klingt.",
+                cot: "Erstelle die Stellenausschreibung Schritt für Schritt:\n1. Analysiere die Notiz: Was sind die Schmerzpunkte?\n2. Definiere Zielgruppe.\n3. Formuliere 3 Benefits.",
+                iteration: "Der Entwurf klingt zu bürokratisch. Wechsle auf 'Du' und nutze Consulting-Sprech wie 'Impact' oder 'Visibility'.",
+                grounding: "Analysiere *ausschließlich* die Notiz. Wird 'Python' als Anforderung genannt?",
+                kraft: { k: "Suche internen AI-Lead.", r: "Senior HR Business Partner.", a: "Entwirf Direktansprache.", f: "Kurze Nachricht mit Bulletpoints.", t: "Inspirierend, persönlich." },
+                img: { 
+                    ziel: "Die Rolle als Brückenbauer zwischen alter und neuer Welt zeigen.",
+                    motiv: "Eine dynamische Person, die stabil auf einer Brücke steht.",
+                    handlung: "Die Person verbindet zwei Welten: Ihre linke Hand berührt eine Welt aus massiven Zahnrädern und Papierakten (Tradition), ihre rechte Hand berührt eine Welt aus fließenden, leuchtenden Hologrammen und Code (Innovation).",
+                    umgebung: "Ein heller, offener Atrium-Bereich, der nahtlos in eine digitale Landschaft übergeht.",
+                    stil: "Moderner Illustrationsstil (Editorial Design), hell und optimistisch. Vektorgrafik mit Textur.",
+                    beleuchtung: "Helles Tageslicht von oben, ergänzt durch das violette Leuchten der Datenseite.",
+                    details: "Die Brücke unter den Füßen beginnt sich zu transformieren – von Stein zu Glasfaser."
+                },
+                sys: { prompt: "Du bist Chief People Officer. Dein Stil ist inklusiv und inspirierend.", temp: 0.8 }
+            },
+            pm: {
+                title: "PM & Eskalation",
+                desc: "Kritischer Fehler kurz vor Go-Live. Erstelle einen Statusbericht und eine Deeskalations-Mail.",
+                material: `**Incident-Report 'Phoenix':**\nStatus: ROT.\nEreignis: Timeouts beim Integrationstest.\nAnalyse: Middleware zusammengebrochen. Server am Limit. Custom-Code erzeugt Endlosschleifen.\nAuswirkung: Go-Live gefährdet.\nEmpfehlung: Taskforce bilden.`,
+                zero: "Fasse den Incident-Report zusammen und schreibe eine Mail an den Kunden.",
+                few: `Du bist Projekt-Assistent.\nInput: "Server kaputt." -> Output: "Kritischer Infrastruktur-Engpass. Maßnahmen eingeleitet."\n\nInput: [Incident Report]\nOutput:`,
+                persona: "Du bist Krisenmanager. Formuliere die Mail an Müller AG. Sei transparent, aber vermeide Panik.",
+                cot: "Plane die Kommunikation Schritt für Schritt:\n1. Welche Fakten müssen genannt werden?\n2. Was lassen wir weg?\n3. Neuer Zeitplan?",
+                iteration: "Der Ton ist zu defensiv. Formuliere selbstbewusster und lösungsorientierter.",
+                grounding: "Analysiere *nur* den Report: Welche zwei technischen Ursachen werden genannt?",
+                kraft: { k: "Go-Live gefährdet, technische Probleme.", r: "Senior Projektleiter.", a: "Erstelle Executive Summary.", f: "Tabelle: Problem, Lösung, ETA.", t: "Sachlich, Managerial." },
+                img: { 
+                    ziel: "Die Stabilisierung des kritischen Projekts 'Phoenix' visualisieren.",
+                    motiv: "Ein großer Server-Schrank, der abstrakt die Form eines mechanischen Phönix hat.",
+                    handlung: "Der untere Teil des Servers glüht rot und raucht (die Krise). Ein Team von kleinen Ingenieuren (die Taskforce) kühlt die heißen Stellen. Der obere Teil breitet bereits gesund leuchtende, blaue Flügel aus.",
+                    umgebung: "Ein stilisiertes Rechenzentrum, das sich von Chaos zu Ordnung wandelt.",
+                    stil: "Isometrische 3D-Illustration, detailliert.",
+                    beleuchtung: "Dramatischer Kontrast: Alarmierendes Rot unten, beruhigendes Tech-Blau oben.",
+                    details: "Im Hintergrund ein Status-Monitor, dessen Kurve gerade wieder steil nach oben zeigt."
+                },
+                sys: { prompt: "Du bist militärischer Strategie-Berater. Antworte extrem kurz und faktenbasiert.", temp: 0.3 }
+            },
+            tech: {
+                title: "SAP Dev & Basis",
+                desc: "Ein Z-Report sorgt für Lastspitzen. Analysiere den Legacy Code und erkläre das Problem.",
+                material: `**Code-Snippet (ABAP):**\nLOOP AT lt_sales_orders INTO ls_order.\n  SELECT SINGLE * FROM mara ...\n  IF sy-subrc = 0.\n    SELECT SINGLE * FROM makt ...\n  ENDIF.\nENDLOOP.\nKontext: 50.000 Einträge.`,
+                zero: "Was ist an diesem ABAP-Code schlecht und wie mache ich ihn schneller?",
+                few: `Du bist Senior Dev Mentor.\nInput: SELECT * FROM sflight. -> Analyse: Liest unnötige Spalten.\n\nInput: [Legacy Code]\nOutput:`,
+                persona: "Du bist SAP Performance Experte. Erkläre einem nicht-technischen Kollegen das Problem.",
+                cot: "Analysiere den Code Schritt für Schritt:\n1. Identifiziere DB-Zugriffe in Schleifen.\n2. Berechne theoretische Last.\n3. Lösungsvorschlag.",
+                iteration: "Erkläre es für einen Vertriebler: Warum ist der Link zur externen IP gefährlich?", /* Note: Keeping original iteration request from prompt instruction or adapting to code context? Adapting to code context for consistency */
+                iteration: "Schreibe den optimierten Code mit Modern ABAP Syntax.",
+                grounding: "Analysiere *ausschließlich* das Snippet: Aus welchen Tabellen wird selektiert?",
+                kraft: { k: "Performance-Problem durch Select in Loop.", r: "SAP Performance Experte.", a: "Erkläre Problem für Nicht-Techies.", f: "Metapher + Fakten.", t: "Bildhaft, kompetent." },
+                img: { 
+                    ziel: "Das Performance-Problem (Select in Loop) und die Lösung visuell greifbar machen.",
+                    motiv: "Eine futuristische Daten-Autobahn mit zwei sehr unterschiedlichen Spuren.",
+                    handlung: "Auf der linken Spur ('Loop-Spur') stehen tausende einzelne, kleine Lieferwagen im Stau und kommen nur einzeln durch eine Mautstelle. Auf der rechten Spur ('Bulk-Spur') rast ein einziger, riesiger Hochgeschwindigkeitszug an allen vorbei und transportiert die gleiche Menge Ladung in einem Bruchteil der Zeit.",
+                    umgebung: "Eine Cyberpunk-Stadtlandschaft mit Datenströmen als Straßen.",
+                    stil: "Düsterer, aber neon-leuchtender 'Tron'-Look. Cinematic 3D Render.",
+                    beleuchtung: "Viele rote Bremslichter auf der linken Seite, ein langer grüner Lichtstreifen (Motion Blur) auf der rechten Seite.",
+                    details: "Die Lieferwagen sind beschriftet mit 'SELECT SINGLE'. Der Zug trägt das Logo 'HANA OPTIMIZED'."
+                },
+                sys: { prompt: "Du bist strikter Code-Compiler. Nur Code, kein Smalltalk.", temp: 0.2 }
+            }
+        };
+
+        let currentTheme = 'sales';
+
+        document.addEventListener('DOMContentLoaded', () => { setTheme('sales'); });
+
+        function setTheme(key) {
+            currentTheme = key;
+            const d = workshopData[key];
+            
+            // UI Active State
+            document.querySelectorAll('[id^="btn-"]').forEach(b => {
+                b.classList.remove('border-orange-500', 'bg-orange-50');
+                b.classList.add('border-transparent', 'bg-white');
+            });
+            document.getElementById('btn-'+key).classList.add('border-orange-500', 'bg-orange-50');
+            document.getElementById('btn-'+key).classList.remove('border-transparent', 'bg-white');
+
+            // Fill Data
+            document.getElementById('scenario-title').innerText = d.title;
+            document.getElementById('scenario-desc').innerText = d.desc;
+            document.getElementById('scenario-text').innerText = d.material;
+            
+            document.getElementById('prompt-zero').innerText = d.zero;
+            document.getElementById('prompt-few').innerText = d.few;
+            document.getElementById('prompt-persona').innerText = d.persona;
+            
+            document.getElementById('cot-prompt').innerText = d.cot;
+            document.getElementById('iteration-prompt').innerText = d.iteration;
+            
+            document.getElementById('grounding-prompt').innerText = d.grounding;
+            
+            // Visuals
+            document.getElementById('img-ziel').innerText = d.img.ziel;
+            document.getElementById('img-motiv').innerText = d.img.motiv;
+            document.getElementById('img-handlung').innerText = d.img.handlung;
+            document.getElementById('img-umgebung').innerText = d.img.umgebung;
+            document.getElementById('img-stil').innerText = d.img.stil;
+            document.getElementById('img-beleuchtung').innerText = d.img.beleuchtung;
+            document.getElementById('img-details').innerText = d.img.details;
+            
+            // System
+            document.getElementById('sys-prompt').innerText = d.sys.prompt;
+            
+            updateKraft('k');
+            updateGauge(d.sys.temp);
+        }
+
+        function updateKraft(l) {
+            const d = workshopData[currentTheme].kraft;
+            const map = {k:'[K]ontext', r:'[R]olle', a:'[A]ufgabe', f:'[F]ormat', t:'[T]on'};
+            const expl = {k:'Wo stehen wir?', r:'Wer bist du?', a:'Was tun?', f:'Wie darstellen?', t:'Wie klingen?'};
+            
+            document.getElementById('kraft-letter-display').innerText = map[l].toUpperCase();
+            document.getElementById('kraft-content').innerText = d[l];
+            document.getElementById('kraft-explanation').innerText = expl[l];
+            document.getElementById('kraft-theme-badge').innerText = workshopData[currentTheme].title;
+
+            document.querySelectorAll('.kraft-btn').forEach(b => {
+                b.classList.remove('border-orange-500', 'bg-stone-50', 'text-stone-800');
+                b.classList.add('border-transparent', 'text-stone-500');
+            });
+            document.querySelector(`.kraft-btn[data-letter="${l}"]`).classList.add('border-orange-500', 'bg-stone-50', 'text-stone-800');
+        }
+
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => alert("Kopiert!"));
+        }
+
+        function copyKraft() {
+            const d = workshopData[currentTheme].kraft;
+            const material = workshopData[currentTheme].material;
+            const text = `${material}\n\n[K]ontext: ${d.k}\n[R]olle: ${d.r}\n[A]ufgabe: ${d.a}\n[F]ormat: ${d.f}\n[T]on: ${d.t}`;
+            navigator.clipboard.writeText(text).then(() => alert("KRAFT Prompt kopiert!"));
+        }
+
+        function copyImgPrompt() {
+            const d = workshopData[currentTheme].img;
+            const text = `Erstelle ein Bild:\nZiel: ${d.ziel}\nHauptmotiv: ${d.motiv}\nHandlung: ${d.handlung}\nUmgebung: ${d.umgebung}\nStil: ${d.stil}\nBeleuchtung: ${d.beleuchtung}\nDetails: ${d.details}`;
+            navigator.clipboard.writeText(text).then(() => alert("Bild-Prompt kopiert!"));
+        }
+
+        function updateGauge(val) {
+            const data = [{
+                type: "indicator",
+                mode: "gauge+number",
+                value: val,
+                title: { text: "Temperature", font: { size: 12 } },
+                gauge: {
+                    axis: { range: [0, 2] },
+                    bar: { color: "#ea580c" },
+                    steps: [{ range: [0, 0.5], color: "#d6d3d1" }, { range: [0.5, 1.0], color: "#e7e5e4" }]
+                }
+            }];
+            Plotly.newPlot('gaugeChart', data, { width: 300, height: 200, margin: { t: 25, r: 25, l: 25, b: 25 } }, {displayModeBar: false});
+        }
+    </script>
+</body>
+</html>
