@@ -81,6 +81,8 @@
         .box-prompt-actions {
             display: flex;
             gap: 0.5rem;
+            flex-wrap: nowrap;
+            align-items: center;
         }
         .label-prompt {
             font-weight: 700;
@@ -97,8 +99,24 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             font-size: 0.875rem;
             color: #44403c; /* stone-700 */
-            white-space: pre-wrap; /* Preserve formatting */
+            white-space: normal;
             line-height: 1.6;
+        }
+        .box-prompt-content pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        .prompt-single {
+            margin: 0;
+            padding: 0.5rem 0.75rem;
+            background-color: #fff;
+            border: 1px solid #e7e5e4;
+            border-radius: 0.5rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         
         /* Buttons */
@@ -120,6 +138,15 @@
             background-color: #f5f5f4;
             color: #ea580c;
             border-color: #fdba74;
+        }
+        .btn-copy.copied {
+            background-color: #16a34a;
+            border-color: #15803d;
+            color: #fff;
+        }
+        .btn-copy:disabled {
+            opacity: 0.65;
+            cursor: default;
         }
 
         .btn-openwebui {
@@ -178,6 +205,137 @@
             letter-spacing: 0.05em;
             margin-bottom: 0.5rem;
         }
+
+        /* Theme cards */
+        .theme-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .theme-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .theme-card {
+            border: 1px solid #e7e5e4;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        .theme-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .theme-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #ea580c;
+        }
+        .theme-card pre {
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            background-color: #fafaf9;
+            border: 1px solid #e7e5e4;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            white-space: pre-wrap;
+        }
+        .theme-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        .exercise-section {
+            position: relative;
+        }
+
+        @media (max-width: 520px) {
+            .box-prompt-actions {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+        }
+
+        @media print {
+            nav, .no-print, .screen-only {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background-color: #fff;
+                color: #000;
+                font-size: 11px;
+                line-height: 1.4;
+            }
+            main {
+                padding: 0 !important;
+            }
+            section {
+                padding: 0 !important;
+                margin: 0 0 0.5rem 0 !important;
+            }
+            .box-task, .box-prompt, .box-reflection {
+                break-inside: avoid;
+                margin-bottom: 0.6rem;
+            }
+            .box-task, .box-reflection {
+                padding: 0.75rem;
+            }
+            .box-prompt {
+                border-radius: 0.25rem;
+            }
+            .box-prompt-content {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+            .prompt-single {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            .theme-card {
+                padding: 0.5rem;
+            }
+            .theme-card pre {
+                font-size: 0.7rem;
+                padding: 0.5rem;
+            }
+            .theme-card-actions, .box-prompt-actions {
+                display: none !important;
+            }
+            .exercise-section {
+                break-before: page;
+                page-break-before: always;
+                padding-top: 0;
+            }
+            .exercise-section:first-of-type {
+                break-before: auto;
+                page-break-before: auto;
+            }
+            #cheatsheet {
+                break-before: page;
+                page-break-before: always;
+            }
+            a[href]:after {
+                content: " (" attr(href) ")";
+                font-size: 0.7em;
+            }
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-orange-200 selection:text-orange-900">
@@ -203,6 +361,7 @@
                     <a href="#ex6" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Übung 6</a>
                     <a href="#ex7" class="text-stone-600 hover:text-orange-600 font-medium transition-colors">Übung 7</a>
                     <a href="#cheatsheet" class="px-3 py-2 bg-stone-800 text-white rounded hover:bg-stone-700 transition-colors font-bold">Cheat Sheet</a>
+                    <button onclick="window.print()" class="px-3 py-2 bg-orange-600 text-white rounded font-bold shadow-sm hover:bg-orange-500 transition-colors no-print">🖨️ Drucken</button>
                 </div>
             </div>
         </div>
@@ -212,7 +371,7 @@
     <header class="bg-white border-b border-stone-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
             <h1 class="text-3xl md:text-4xl font-extrabold text-stone-900 mb-4">Aequitas - Prompt Engineering Workshop</h1>
-            <div class="max-w-3xl mx-auto bg-stone-50 border border-stone-200 rounded-xl p-6 text-left shadow-sm">
+            <div class="max-w-5xl mx-auto bg-stone-50 border border-stone-200 rounded-xl p-6 text-left shadow-sm">
                 <h3 class="font-bold text-stone-800 mb-2 flex items-center gap-2">👋 Willkommen zum Workshop</h3>
                 <p class="text-stone-600 mb-4 leading-relaxed">
                     Diese Webseite führt dich durch die Übungen des heutigen Tages. Suche dir zu Beginn <strong>einen der vier Themenstränge</strong> aus oder überlege dir ein eigenes Thema für den heutigen Tag, welches dich beruflich häufig beschäftigt.
@@ -237,13 +396,13 @@
 
         <!-- SETUP: SCENARIO SELECTION -->
         <section id="scenario-select" class="scroll-mt-24">
-            <div class="flex items-center mb-6">
+            <div class="flex items-center mb-6 screen-only">
                 <span class="bg-stone-800 text-white px-3 py-1 rounded text-sm font-bold mr-3">SCHRITT 1</span>
                 <h2 class="text-2xl font-bold text-stone-800">Wähle deinen Themenstrang</h2>
             </div>
 
             <!-- Buttons Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 screen-only">
                 <button onclick="setTheme('sales')" id="btn-sales" class="card-hover bg-white p-5 rounded-xl border-2 border-transparent shadow-sm text-left group">
                     <div class="text-2xl mb-2">💼 Thema 1</div>
                     <h3 class="font-bold text-stone-800">Sales & Strategy</h3>
@@ -267,13 +426,13 @@
             </div>
 
             <!-- Detail Display -->
-            <div class="bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden ring-1 ring-black/5" id="context-container">
+            <div class="bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden ring-1 ring-black/5 screen-only" id="context-container">
                 <div class="bg-stone-100 px-6 py-4 border-b border-stone-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                          <span class="text-xs font-bold text-orange-600 uppercase tracking-wider block mb-1">Dein Szenario</span>
                          <h4 id="scenario-title" class="text-lg font-bold text-stone-800">Bitte Thema wählen...</h4>
                     </div>
-                    <button onclick="copyText('scenario-text')" class="text-xs bg-white border border-stone-300 hover:bg-stone-50 text-stone-600 px-3 py-2 rounded flex items-center gap-1 transition-colors font-medium whitespace-nowrap">
+                    <button onclick="copyText('scenario-text', this)" class="text-xs bg-white border border-stone-300 hover:bg-stone-50 text-stone-600 px-3 py-2 rounded flex items-center gap-1 transition-colors font-medium whitespace-nowrap no-print">
                         📋 Text kopieren
                     </button>
                 </div>
@@ -289,12 +448,22 @@
                     </div>
                 </div>
             </div>
+
+            <div class="print-only mt-6">
+                <h4 class="text-lg font-bold text-stone-700 mb-3">Alle Szenarien im Überblick</h4>
+                <div class="theme-grid" id="scenario-print-grid"></div>
+            </div>
         </section>
 
         <hr class="border-stone-200">
 
+        <div class="flex items-center gap-3 mt-12 mb-6">
+            <span class="bg-stone-800 text-white px-3 py-1 rounded text-sm font-bold">SCHRITT 2</span>
+            <p class="text-stone-600 font-semibold">Arbeite dich jetzt durch die folgenden Übungen.</p>
+        </div>
+
         <!-- ÜBUNG 1 -->
-        <section id="ex1" class="scroll-mt-24">
+        <section id="ex1" class="scroll-mt-24 exercise-section">
             <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
                 
@@ -319,13 +488,21 @@
 
                     <div class="box-prompt">
                         <div class="box-prompt-header">
-                            <span class="label-prompt">💡 Prompt-Idee (Teil 1)</span>
-                            <div class="box-prompt-actions">
-                                <button onclick="openInWebUI('prompt-zero', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
-                                <button onclick="copyText('prompt-zero')" class="btn-copy">📋 Kopieren</button>
+                            <div>
+                                <span class="label-prompt">💡 Prompt-Idee (Teil 1)</span>
+                                <p class="text-xs text-stone-500">Thema: <span id="prompt-zero-theme">Sales & Strategy</span></p>
+                            </div>
+                            <div class="box-prompt-actions screen-only">
+                                <button onclick="handlePromptAction('zero','open',{includeMaterial:true})" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="handlePromptAction('zero','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
                             </div>
                         </div>
-                        <div class="box-prompt-content" id="prompt-zero">...</div>
+                        <div class="box-prompt-content">
+                            <div class="screen-only">
+                                <pre id="prompt-zero-single" class="prompt-single">...</pre>
+                            </div>
+                            <div class="theme-grid print-only" id="prompt-zero-grid"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -346,13 +523,21 @@
 
                     <div class="box-prompt">
                         <div class="box-prompt-header">
-                            <span class="label-prompt">💡 Prompt-Idee (Teil 2 - Few-Shot)</span>
-                            <div class="box-prompt-actions">
-                                <button onclick="openInWebUI('prompt-few', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
-                                <button onclick="copyText('prompt-few')" class="btn-copy">📋 Kopieren</button>
+                            <div>
+                                <span class="label-prompt">💡 Prompt-Idee (Teil 2 - Few-Shot)</span>
+                                <p class="text-xs text-stone-500">Thema: <span id="prompt-few-theme">Sales & Strategy</span></p>
+                            </div>
+                            <div class="box-prompt-actions screen-only">
+                                <button onclick="handlePromptAction('few','open',{includeMaterial:true})" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="handlePromptAction('few','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
                             </div>
                         </div>
-                        <div class="box-prompt-content" id="prompt-few">...</div>
+                        <div class="box-prompt-content">
+                            <div class="screen-only">
+                                <pre id="prompt-few-single" class="prompt-single">...</pre>
+                            </div>
+                            <div class="theme-grid print-only" id="prompt-few-grid"></div>
+                        </div>
                     </div>
 
                     <div class="box-reflection">
@@ -369,7 +554,7 @@
         </section>
 
         <!-- ÜBUNG 2 -->
-        <section id="ex2" class="scroll-mt-24">
+        <section id="ex2" class="scroll-mt-24 exercise-section">
             <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-purple-500"></div>
                 <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-3">
@@ -389,13 +574,21 @@
 
                 <div class="box-prompt">
                     <div class="box-prompt-header">
-                        <span class="label-prompt">💡 Prompt-Idee</span>
-                        <div class="box-prompt-actions">
-                            <button onclick="openInWebUI('prompt-persona', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
-                            <button onclick="copyText('prompt-persona')" class="btn-copy">📋 Kopieren</button>
+                        <div>
+                            <span class="label-prompt">💡 Prompt-Idee</span>
+                            <p class="text-xs text-stone-500">Thema: <span id="prompt-persona-theme">Sales & Strategy</span></p>
+                        </div>
+                        <div class="box-prompt-actions screen-only">
+                            <button onclick="handlePromptAction('persona','open',{includeMaterial:true})" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="handlePromptAction('persona','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
                         </div>
                     </div>
-                    <div class="box-prompt-content" id="prompt-persona">...</div>
+                    <div class="box-prompt-content">
+                        <div class="screen-only">
+                            <pre id="prompt-persona-single" class="prompt-single">...</pre>
+                        </div>
+                        <div class="theme-grid print-only" id="prompt-persona-grid"></div>
+                    </div>
                 </div>
 
                 <div class="box-reflection">
@@ -410,7 +603,7 @@
         </section>
 
         <!-- ÜBUNG 3 -->
-        <section id="ex3" class="scroll-mt-24">
+        <section id="ex3" class="scroll-mt-24 exercise-section">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
                 <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
@@ -432,24 +625,39 @@
                 <div class="space-y-6">
                     <div class="box-prompt">
                         <div class="box-prompt-header">
-                            <span class="label-prompt">💡 Schritt 1: CoT Analyse</span>
-                            <div class="box-prompt-actions">
-                                <button onclick="openInWebUI('cot-prompt', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
-                                <button onclick="copyText('cot-prompt')" class="btn-copy">📋 Kopieren</button>
+                            <div>
+                                <span class="label-prompt">💡 Schritt 1: CoT Analyse</span>
+                                <p class="text-xs text-stone-500">Thema: <span id="cot-theme">Sales & Strategy</span></p>
+                            </div>
+                            <div class="box-prompt-actions screen-only">
+                                <button onclick="handlePromptAction('cot','open',{includeMaterial:true})" class="btn-openwebui">🚀 OpenWebUI</button>
+                                <button onclick="handlePromptAction('cot','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
                             </div>
                         </div>
-                        <div class="box-prompt-content" id="cot-prompt">...</div>
+                        <div class="box-prompt-content">
+                            <div class="screen-only">
+                                <pre id="cot-single" class="prompt-single">...</pre>
+                            </div>
+                            <div class="theme-grid print-only" id="cot-grid"></div>
+                        </div>
                     </div>
 
                     <div class="box-prompt">
                         <div class="box-prompt-header">
-                            <span class="label-prompt">💡 Schritt 2: Iteration (Folge-Prompt)</span>
-                            <div class="box-prompt-actions">
-                                <!-- Removed OpenWebUI button for iteration as requested -->
-                                <button onclick="copyText('iteration-prompt')" class="btn-copy">📋 Kopieren</button>
+                            <div>
+                                <span class="label-prompt">💡 Schritt 2: Iteration (Folge-Prompt)</span>
+                                <p class="text-xs text-stone-500">Thema: <span id="iteration-theme">Sales & Strategy</span></p>
+                            </div>
+                            <div class="box-prompt-actions screen-only">
+                                <button onclick="handlePromptAction('iteration','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
                             </div>
                         </div>
-                        <div class="box-prompt-content" id="iteration-prompt">...</div>
+                        <div class="box-prompt-content">
+                            <div class="screen-only">
+                                <pre id="iteration-single" class="prompt-single">...</pre>
+                            </div>
+                            <div class="theme-grid print-only" id="iteration-grid"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -465,7 +673,7 @@
         </section>
 
         <!-- ÜBUNG 4 -->
-        <section id="ex4" class="scroll-mt-24">
+        <section id="ex4" class="scroll-mt-24 exercise-section">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-stone-700"></div>
                 <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
@@ -480,13 +688,21 @@
 
                 <div class="box-prompt">
                     <div class="box-prompt-header">
-                        <span class="label-prompt">💡 Prompt-Idee (Grounding)</span>
-                        <div class="box-prompt-actions">
-                            <button onclick="openInWebUI('grounding-prompt', 'azure-gpt-5.1', true)" class="btn-openwebui">🚀 OpenWebUI</button>
-                            <button onclick="copyText('grounding-prompt')" class="btn-copy">📋 Kopieren</button>
+                        <div>
+                            <span class="label-prompt">💡 Prompt-Idee (Grounding)</span>
+                            <p class="text-xs text-stone-500">Thema: <span id="grounding-theme">Sales & Strategy</span></p>
+                        </div>
+                        <div class="box-prompt-actions screen-only">
+                            <button onclick="handlePromptAction('grounding','open',{includeMaterial:true})" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="handlePromptAction('grounding','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
                         </div>
                     </div>
-                    <div class="box-prompt-content" id="grounding-prompt">...</div>
+                    <div class="box-prompt-content">
+                        <div class="screen-only">
+                            <pre id="grounding-single" class="prompt-single">...</pre>
+                        </div>
+                        <div class="theme-grid print-only" id="grounding-grid"></div>
+                    </div>
                 </div>
 
                 <div class="box-reflection">
@@ -501,7 +717,7 @@
         </section>
 
         <!-- ÜBUNG 5 -->
-        <section id="ex5" class="scroll-mt-24 space-y-10">
+        <section id="ex5" class="scroll-mt-24 space-y-10 exercise-section">
             <!-- Part 1: Builder -->
             <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
@@ -526,33 +742,43 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                    <div class="space-y-2 col-span-1">
-                        <button onclick="updateKraft('k')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent active-kraft bg-stone-50 border-orange-500 text-stone-800" data-letter="k">[K]ontext</button>
-                        <button onclick="updateKraft('r')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="r">[R]olle</button>
-                        <button onclick="updateKraft('a')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="a">[A]ufgabe</button>
-                        <button onclick="updateKraft('f')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="f">[F]ormat</button>
-                        <button onclick="updateKraft('t')" class="kraft-btn w-full text-left px-4 py-3 rounded-lg hover:bg-stone-100 font-bold text-stone-500 transition-colors border-l-4 border-transparent" data-letter="t">[T]on</button>
-                    </div>
-
-                    <div class="col-span-2 bg-stone-50 rounded-xl border border-stone-200 overflow-hidden flex flex-col min-h-[300px]">
-                        <div class="bg-stone-100 p-4 flex justify-between items-center border-b border-stone-200">
-                            <span class="text-stone-500 font-mono text-sm">kraft_builder</span>
-                            <span class="text-orange-600 font-bold tracking-widest" id="kraft-letter-display">KONTEXT</span>
+                <div class="screen-only bg-stone-50 border border-stone-200 rounded-xl p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-stone-500 font-bold">Aktuelles Thema</p>
+                            <p class="text-base font-semibold text-stone-800" id="kraft-theme-label">...</p>
                         </div>
-                        <div class="p-8 flex-grow flex flex-col justify-center items-center text-center">
-                            <div id="kraft-content" class="text-xl font-serif text-stone-800 leading-relaxed">...</div>
-                            <p id="kraft-explanation" class="mt-6 text-stone-500 text-sm font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-stone-100">...</p>
-                        </div>
-                        <div class="bg-white p-4 border-t border-stone-200 text-right flex justify-between items-center">
-                            <span class="text-xs text-stone-400 font-mono">Theme: <span id="kraft-theme-badge" class="text-stone-600 font-bold">...</span></span>
-                            <div class="flex gap-2">
-                                <button onclick="openKraftInWebUI('azure-gpt-5.1')" class="btn-openwebui">🚀 OpenWebUI</button>
-                                <button onclick="copyKraft()" class="btn-copy">📋 Kopieren</button>
-                            </div>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="openKraftPrompt(currentTheme)" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="copyKraftPrompt(currentTheme, this)" class="btn-copy">📋 Kopieren</button>
                         </div>
                     </div>
+                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <dt class="font-bold text-stone-600">[K] Kontext</dt>
+                            <dd class="text-stone-900" id="kraft-k">...</dd>
+                        </div>
+                        <div>
+                            <dt class="font-bold text-stone-600">[R] Rolle</dt>
+                            <dd class="text-stone-900" id="kraft-r">...</dd>
+                        </div>
+                        <div>
+                            <dt class="font-bold text-stone-600">[A] Aufgabe</dt>
+                            <dd class="text-stone-900" id="kraft-a">...</dd>
+                        </div>
+                        <div>
+                            <dt class="font-bold text-stone-600">[F] Format</dt>
+                            <dd class="text-stone-900" id="kraft-f">...</dd>
+                        </div>
+                        <div class="md:col-span-2">
+                            <dt class="font-bold text-stone-600">[T] Ton</dt>
+                            <dd class="text-stone-900" id="kraft-t">...</dd>
+                        </div>
+                    </dl>
                 </div>
+
+                <p class="text-sm text-stone-500 mb-2 print-only">K.R.A.F.T.-Prompts für alle Themenstränge</p>
+                <div class="theme-grid mb-12 print-only" id="kraft-grid"></div>
 
                 <!-- Teil 2: Optimizer -->
                 <div class="border-t border-stone-200 pt-8 mt-8">
@@ -564,16 +790,16 @@
                         <p class="text-stone-700"><strong>Aufgabe:</strong> Nutze den Prompt Optimizer unten, um aus deinem Prompt aus Übung 3 einen perfekten K.R.A.F.T. Prompt zu entwickeln.</p>
                     </div>
 
-                    <div class="box-prompt">
+                                        <div class="box-prompt">
                         <div class="box-prompt-header">
                             <span class="label-prompt">🛠️ Prompt Optimizer (Meta-Prompt)</span>
-                            <div class="box-prompt-actions">
+                            <div class="box-prompt-actions screen-only">
                                 <!-- OpenWebUI button removed for Optimizer -->
-                                <button onclick="copyText('optimizer-text')" class="btn-copy">📋 Kopieren</button>
+                                <button onclick="copyText('optimizer-text', this)" class="btn-copy">📋 Kopieren</button>
                             </div>
                         </div>
-                        <div class="box-prompt-content" id="optimizer-text">
-**ROLE:** Du agierst als Senior Prompt-Engineering-Experte mit tiefgreifender Erfahrung in den Frameworks K.R.A.F.T., Chain-of-Thought und Few-Shot-Techniken sowie der Erstellung von Bewertungsrubriken. Deine Aufgabe ist es, Prompts systematisch zu analysieren und zu verbessern.
+                                                <div class="box-prompt-content">
+                                                        <pre id="optimizer-text" class="prompt-single">**ROLE:** Du agierst als Senior Prompt-Engineering-Experte mit tiefgreifender Erfahrung in den Frameworks K.R.A.F.T., Chain-of-Thought und Few-Shot-Techniken sowie der Erstellung von Bewertungsrubriken. Deine Aufgabe ist es, Prompts systematisch zu analysieren und zu verbessern.
 
 **AUFGABE:** Analysiere und verbessere den untenstehenden `INPUT_PROMPT` methodisch. Deine Antwort muss exakt den folgenden Schritten und Formatierungsvorgaben entsprechen.
 
@@ -585,11 +811,11 @@
 
 - **2.1) Schwächen:** Identifiziere Schwächen in den Kategorien: `Klarheit`, `Kontext`, `Struktur`, `Spezifität`, `Format`. Gib pro Kategorie 1-3 konkrete Stichpunkte an.
 - **2.2) Bewertungsrubrik:** Bewerte den `INPUT_PROMPT` auf einer Skala von 0 (mangelhaft) bis 5 (exzellent) für die folgenden Kriterien. Begründe jede Bewertung in einem Satz.
-  - Klarheit:
-  - Kontext:
-  - Struktur:
-  - Spezifität:
-  - Erfolgskriterien:
+    - Klarheit:
+    - Kontext:
+    - Struktur:
+    - Spezifität:
+    - Erfolgskriterien:
 
 **3) KONKRETE VERBESSERUNGSMASSNAHMEN** Leite aus jeder in Schritt 2.1 identifizierten Schwäche 1-2 klare, umsetzbare Handlungsempfehlungen ab (z.B. "Füge ein Negativbeispiel hinzu", "Definiere das Zielpublikum explizit").
 
@@ -626,7 +852,8 @@
 - Die Ausgabesprache entspricht der Sprache des `INPUT_PROMPT`. Ist keine Sprache erkennbar, verwende Deutsch.
 
 **INPUT_PROMPT:**
-[HIER DEINEN PROMPT EINFÜGEN]</div>
+[HIER DEINEN PROMPT EINFÜGEN]</pre>
+                                                </div>
                     </div>
                 </div>
 
@@ -642,7 +869,7 @@
         </section>
 
         <!-- ÜBUNG 6 -->
-        <section id="ex6" class="scroll-mt-24">
+        <section id="ex6" class="scroll-mt-24 exercise-section">
             <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-teal-500"></div>
                 <h3 class="text-xl font-bold text-stone-800 mb-6 flex items-center gap-2">
@@ -658,40 +885,45 @@
                 <!-- Special Visual Prompt Box -->
                 <div class="bg-stone-50 border border-stone-200 rounded-xl overflow-hidden mb-6">
                     <div class="bg-stone-100 px-4 py-2 border-b border-stone-200 flex justify-between items-center">
-                        <span class="label-prompt mb-0">🎨 Bild-Prompt Struktur</span>
-                        <div class="box-prompt-actions">
-                            <button onclick="openImgPromptInWebUI('google_gemini.gemini-2.5-flash-image-preview')" class="btn-openwebui">🚀 OpenWebUI</button>
-                            <button onclick="copyImgPrompt()" class="btn-copy">📋 Alles Kopieren</button>
+                        <span class="label-prompt mb-0">🎨 Bild-Prompts</span>
+                        <div class="box-prompt-actions screen-only">
+                            <button onclick="openImagePrompt(currentTheme)" class="btn-openwebui">🚀 OpenWebUI</button>
+                            <button onclick="copyImagePrompt(currentTheme, this)" class="btn-copy">📋 Kopieren</button>
                         </div>
                     </div>
                     <div class="p-4 space-y-4">
-                        <div>
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Ziel</span>
-                            <p class="text-stone-900 font-medium text-sm" id="img-ziel">...</p>
+                        <div class="screen-only grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Ziel</span>
+                                <p class="text-stone-900 font-medium text-sm" id="img-ziel">...</p>
+                            </div>
+                            <div>
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Hauptmotiv</span>
+                                <p class="text-stone-900 font-medium" id="img-motiv">...</p>
+                            </div>
+                            <div>
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Handlung</span>
+                                <p class="text-stone-900 text-sm leading-relaxed" id="img-handlung">...</p>
+                            </div>
+                            <div>
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Umgebung</span>
+                                <p class="text-stone-900 text-sm leading-relaxed" id="img-umgebung">...</p>
+                            </div>
+                            <div>
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Stil</span>
+                                <p class="text-stone-900 text-sm leading-relaxed" id="img-stil">...</p>
+                            </div>
+                            <div>
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Beleuchtung</span>
+                                <p class="text-stone-900 text-sm leading-relaxed" id="img-beleuchtung">...</p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Details</span>
+                                <p class="text-stone-900 text-sm leading-relaxed" id="img-details">...</p>
+                            </div>
                         </div>
-                        <div class="border-l-4 border-stone-300 pl-4 py-1">
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Hauptmotiv</span>
-                            <p class="text-stone-900 font-medium" id="img-motiv">...</p>
-                        </div>
-                        <div class="border-l-4 border-stone-300 pl-4 py-1">
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Handlung</span>
-                            <p class="text-stone-900 text-sm leading-relaxed" id="img-handlung">...</p>
-                        </div>
-                        <div class="border-l-4 border-stone-300 pl-4 py-1">
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Umgebung</span>
-                            <p class="text-stone-900 text-sm leading-relaxed" id="img-umgebung">...</p>
-                        </div>
-                        <div class="border-l-4 border-stone-300 pl-4 py-1">
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Stil</span>
-                            <p class="text-stone-900 text-sm leading-relaxed" id="img-stil">...</p>
-                        </div>
-                        <div class="border-l-4 border-stone-300 pl-4 py-1">
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Beleuchtung</span>
-                            <p class="text-stone-900 text-sm leading-relaxed" id="img-beleuchtung">...</p>
-                        </div>
-                        <div class="border-l-4 border-stone-300 pl-4 py-1">
-                            <span class="text-xs uppercase tracking-wide text-stone-500 font-bold block mb-1">Details</span>
-                            <p class="text-stone-900 text-sm leading-relaxed" id="img-details">...</p>
+                        <div class="print-only">
+                            <div class="theme-grid" id="img-grid"></div>
                         </div>
                     </div>
                 </div>
@@ -708,7 +940,7 @@
         </section>
 
         <!-- ÜBUNG 7 -->
-        <section id="ex7" class="scroll-mt-24">
+        <section id="ex7" class="scroll-mt-24 exercise-section">
             <div class="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm flex flex-col relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-pink-500"></div>
                 <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2 mb-6">
@@ -730,50 +962,79 @@
                         <div class="box-prompt mt-4">
                             <div class="box-prompt-header">
                                 <span class="label-prompt">⚙️ System Prompt</span>
-                                <div class="box-prompt-actions">
+                                <div class="box-prompt-actions screen-only">
                                     <!-- OpenWebUI removed for System Prompt -->
-                                    <button onclick="copyText('sys-prompt')" class="btn-copy">📋 Kopieren</button>
+                                    <button onclick="copyText('sys-prompt', this)" class="btn-copy">📋 Kopieren</button>
                                 </div>
                             </div>
                             <div class="box-prompt-content" id="sys-prompt">...</div>
                         </div>
-                    </div>
 
-                    <!-- Cheat Sheet Table -->
-                    <div class="overflow-x-auto">
-                         <div class="cs-title">🎛️ Cheat Sheet: Parameter</div>
-                        <table class="w-full text-xs text-left text-stone-600 border border-stone-200 rounded-lg overflow-hidden">
-                            <thead class="bg-stone-100 text-stone-700 font-bold">
-                                <tr>
-                                    <th class="p-2 border-b">Parameter</th>
-                                    <th class="p-2 border-b">Wann hoch?</th>
-                                    <th class="p-2 border-b">Wann niedrig?</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b">
-                                    <td class="p-2 font-bold">Temperature</td>
-                                    <td class="p-2">Brainstorming, Story</td>
-                                    <td class="p-2">Fakten, Code</td>
-                                </tr>
-                                <tr class="border-b">
-                                    <td class="p-2 font-bold">Frequency Penalty</td>
-                                    <td class="p-2">Essays, Vielfalt</td>
-                                    <td class="p-2">Syntax, Übersetzung</td>
-                                </tr>
-                                 <tr class="border-b">
-                                    <td class="p-2 font-bold">Top P</td>
-                                    <td class="p-2">Breites Denken</td>
-                                    <td class="p-2">Präzise Antworten</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2 font-bold">Reasoning Effort</td>
-                                    <td class="p-2">Komplexe Logik</td>
-                                    <td class="p-2">Einfache Fragen</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="box-prompt mt-4">
+                            <div class="box-prompt-header">
+                                <div>
+                                    <span class="label-prompt">💡 Prompt-Idee (System + Aufgabe)</span>
+                                    <p class="text-xs text-stone-500">Thema: <span id="sys-idea-theme">Sales & Strategy</span></p>
+                                </div>
+                                <div class="box-prompt-actions screen-only">
+                                    <button onclick="handlePromptAction('sysIdea','open',{includeMaterial:true})" class="btn-openwebui">🚀 OpenWebUI</button>
+                                    <button onclick="handlePromptAction('sysIdea','copy',{includeMaterial:true}, this)" class="btn-copy">📋 Kopieren</button>
+                                </div>
+                            </div>
+                            <div class="box-prompt-content">
+                                <div class="screen-only">
+                                    <pre id="sys-idea-single" class="prompt-single">...</pre>
+                                </div>
+                                <div class="theme-grid print-only" id="sys-idea-grid"></div>
+                            </div>
+                        </div>
                     </div>
+                    <div class="box-prompt">
+                        <div class="box-prompt-header">
+                            <span class="label-prompt">🎛️ Cheat Sheet: Parameter</span>
+                        </div>
+                        <div class="box-prompt-content">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-left text-stone-600 border border-stone-200 rounded-lg overflow-hidden">
+                                    <thead class="bg-stone-100 text-stone-700 font-bold">
+                                        <tr>
+                                            <th class="p-2 border-b">Parameter</th>
+                                            <th class="p-2 border-b">Wann hoch?</th>
+                                            <th class="p-2 border-b">Wann niedrig?</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b">
+                                            <td class="p-2 font-bold">Temperature</td>
+                                            <td class="p-2">Brainstorming, Story</td>
+                                            <td class="p-2">Fakten, Code</td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="p-2 font-bold">Frequency Penalty</td>
+                                            <td class="p-2">Essays, Vielfalt</td>
+                                            <td class="p-2">Syntax, Übersetzung</td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="p-2 font-bold">Top P</td>
+                                            <td class="p-2">Breites Denken</td>
+                                            <td class="p-2">Präzise Antworten</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2 font-bold">Reasoning Effort</td>
+                                            <td class="p-2">Komplexe Logik</td>
+                                            <td class="p-2">Einfache Fragen</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 print-only">
+                    <h4 class="text-lg font-bold text-stone-700 mb-2">System Prompts pro Themenstrang</h4>
+                    <p class="text-sm text-stone-500 mb-4">Nutze die Karten unten zum schnellen Kopieren oder Starten eines Chats – ideal für Ausdruck und Dokumentation.</p>
+                    <div class="theme-grid" id="sys-grid"></div>
                 </div>
 
                 <div class="box-reflection">
@@ -960,37 +1221,347 @@
 
     <!-- LOGIC -->
     <script>
-        function openInWebUI(elementId, modelName, includeMaterial = false) {
-            let text = document.getElementById(elementId).innerText;
-            
-            if (includeMaterial) {
-                const material = workshopData[currentTheme].material;
-                text = material + "\n\n" + text;
+        const DEFAULT_MODEL = 'azure-gpt-5.1';
+        const DEFAULT_IMAGE_MODEL = 'google_gemini.gemini-2.5-flash-image-preview';
+
+        function buildPromptPayload(themeKey, promptText, includeMaterial = false) {
+            if (!promptText) return '';
+            if (!includeMaterial) return promptText;
+            const material = workshopData[themeKey]?.material || '';
+            return `${material}\n\n${promptText}`;
+        }
+
+        function indicateCopy(button, label = '✅ Kopiert') {
+            if (!button) return;
+            if (!button.dataset.originalLabel) {
+                button.dataset.originalLabel = button.innerHTML;
             }
-            
-            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(text)}&model=${modelName}`;
+            button.innerHTML = label;
+            button.classList.add('copied');
+            setTimeout(() => {
+                button.classList.remove('copied');
+                button.innerHTML = button.dataset.originalLabel;
+                button.disabled = false;
+            }, 1800);
+        }
+
+        function copyToClipboard(text, button, label) {
+            if (!text) return;
+            const successLabel = label || '✅ Kopiert';
+            if (button) {
+                if (!button.dataset.originalLabel) {
+                    button.dataset.originalLabel = button.innerHTML;
+                }
+                button.disabled = true;
+            }
+            navigator.clipboard.writeText(text)
+                .then(() => indicateCopy(button, successLabel))
+                .catch(err => {
+                    console.error('Kopieren fehlgeschlagen', err);
+                    if (button) {
+                        button.disabled = false;
+                        button.classList.remove('copied');
+                        if (button.dataset.originalLabel) {
+                            button.innerHTML = button.dataset.originalLabel;
+                        }
+                    }
+                });
+        }
+
+        function copyPromptText(themeKey, promptText, includeMaterial = false, button) {
+            const payload = buildPromptPayload(themeKey, promptText, includeMaterial);
+            if (!payload) return;
+            copyToClipboard(payload, button);
+        }
+
+        function openPromptInWebUI(themeKey, promptText, modelName = DEFAULT_MODEL, includeMaterial = false) {
+            const payload = buildPromptPayload(themeKey, promptText, includeMaterial);
+            if (!payload) return;
+            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(payload)}&model=${modelName}`;
             window.open(url, '_blank');
         }
 
-        function openKraftInWebUI(modelName) {
-            const d = workshopData[currentTheme].kraft;
-            const material = workshopData[currentTheme].material;
-            const text = `${material}\n\n[K]ontext: ${d.k}\n[R]olle: ${d.r}\n[A]ufgabe: ${d.a}\n[F]ormat: ${d.f}\n[T]on: ${d.t}`;
-            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(text)}&model=${modelName}`;
+        function createActionButtons({ onOpen, onCopy }) {
+            if (!onOpen && !onCopy) return null;
+            const wrap = document.createElement('div');
+            wrap.className = 'theme-card-actions';
+            if (onOpen) {
+                const openBtn = document.createElement('button');
+                openBtn.type = 'button';
+                openBtn.className = 'btn-openwebui';
+                openBtn.textContent = '🚀 Starten';
+                openBtn.addEventListener('click', () => onOpen(openBtn));
+                wrap.appendChild(openBtn);
+            }
+            if (onCopy) {
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'btn-copy';
+                copyBtn.textContent = '📋 Kopieren';
+                copyBtn.addEventListener('click', () => onCopy(copyBtn));
+                wrap.appendChild(copyBtn);
+            }
+            return wrap;
+        }
+
+        function renderPromptGrid(containerId, valueSelector, options = {}) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            Object.entries(workshopData).forEach(([themeKey, data]) => {
+                const promptText = valueSelector(data);
+                const card = document.createElement('article');
+                card.className = 'theme-card';
+
+                const header = document.createElement('div');
+                header.className = 'theme-card-header';
+                const badge = document.createElement('span');
+                badge.className = 'theme-badge';
+                badge.textContent = data.title;
+                header.appendChild(badge);
+                card.appendChild(header);
+
+                const body = document.createElement('pre');
+                body.textContent = promptText;
+                card.appendChild(body);
+
+                const actions = createActionButtons({
+                    onOpen: options.disableOpen ? null : () => openPromptInWebUI(themeKey, promptText, options.modelName || DEFAULT_MODEL, options.includeMaterial),
+                    onCopy: (btn) => copyPromptText(themeKey, promptText, options.includeMaterial, btn)
+                });
+                if (actions) card.appendChild(actions);
+
+                container.appendChild(card);
+            });
+        }
+
+        function handlePromptAction(promptKey, action, options = {}, button) {
+            const themeKey = currentTheme;
+            const promptText = workshopData[themeKey]?.[promptKey];
+            if (!promptText) return;
+            if (action === 'open') {
+                openPromptInWebUI(themeKey, promptText, options.modelName || DEFAULT_MODEL, options.includeMaterial);
+            } else if (action === 'copy') {
+                copyPromptText(themeKey, promptText, options.includeMaterial, button);
+            }
+        }
+
+        function buildKraftPrompt(themeKey) {
+            const theme = workshopData[themeKey];
+            const k = theme?.kraft;
+            if (!theme || !k) return '';
+            return `${theme.material}\n\n[K]ontext: ${k.k}\n[R]olle: ${k.r}\n[A]ufgabe: ${k.a}\n[F]ormat: ${k.f}\n[T]on: ${k.t}`;
+        }
+
+        function copyKraftPrompt(themeKey, button) {
+            const payload = buildKraftPrompt(themeKey);
+            if (!payload) return;
+            copyToClipboard(payload, button);
+        }
+
+        function openKraftPrompt(themeKey, modelName = DEFAULT_MODEL) {
+            const payload = buildKraftPrompt(themeKey);
+            if (!payload) return;
+            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(payload)}&model=${modelName}`;
             window.open(url, '_blank');
         }
 
-        function openImgPromptInWebUI(modelName) {
-            const d = workshopData[currentTheme].img;
-            const text = `Erstelle ein Bild:\nZiel: ${d.ziel}\nHauptmotiv: ${d.motiv}\nHandlung: ${d.handlung}\nUmgebung: ${d.umgebung}\nStil: ${d.stil}\nBeleuchtung: ${d.beleuchtung}\nDetails: ${d.details}`;
-            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(text)}&model=${modelName}`;
+        function renderKraftGrid(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            Object.entries(workshopData).forEach(([themeKey, data]) => {
+                const card = document.createElement('article');
+                card.className = 'theme-card';
+
+                const header = document.createElement('div');
+                header.className = 'theme-card-header';
+                const badge = document.createElement('span');
+                badge.className = 'theme-badge';
+                badge.textContent = data.title;
+                header.appendChild(badge);
+                card.appendChild(header);
+
+                const list = document.createElement('dl');
+                list.className = 'text-sm text-stone-700 space-y-1';
+                const entries = [
+                    ['K', 'Kontext', data.kraft.k],
+                    ['R', 'Rolle', data.kraft.r],
+                    ['A', 'Aufgabe', data.kraft.a],
+                    ['F', 'Format', data.kraft.f],
+                    ['T', 'Ton', data.kraft.t]
+                ];
+                entries.forEach(([letter, label, value]) => {
+                    const dt = document.createElement('dt');
+                    dt.className = 'font-bold text-stone-600';
+                    dt.textContent = `[${letter}] ${label}`;
+                    const dd = document.createElement('dd');
+                    dd.className = 'text-stone-800 mb-1';
+                    dd.textContent = value;
+                    list.appendChild(dt);
+                    list.appendChild(dd);
+                });
+                card.appendChild(list);
+
+                const actions = createActionButtons({
+                    onOpen: () => openKraftPrompt(themeKey),
+                    onCopy: (btn) => copyKraftPrompt(themeKey, btn)
+                });
+                if (actions) card.appendChild(actions);
+
+                container.appendChild(card);
+            });
+        }
+
+        function buildImagePrompt(themeKey) {
+            const img = workshopData[themeKey]?.img;
+            if (!img) return '';
+            return `Erstelle ein Bild:\nZiel: ${img.ziel}\nHauptmotiv: ${img.motiv}\nHandlung: ${img.handlung}\nUmgebung: ${img.umgebung}\nStil: ${img.stil}\nBeleuchtung: ${img.beleuchtung}\nDetails: ${img.details}`;
+        }
+
+        function copyImagePrompt(themeKey, button) {
+            const payload = buildImagePrompt(themeKey);
+            if (!payload) return;
+            copyToClipboard(payload, button);
+        }
+
+        function openImagePrompt(themeKey, modelName = DEFAULT_IMAGE_MODEL) {
+            const payload = buildImagePrompt(themeKey);
+            if (!payload) return;
+            const url = `https://ki.aequitas-ag.de/?q=${encodeURIComponent(payload)}&model=${modelName}`;
             window.open(url, '_blank');
         }
 
-        function copyImgPrompt() {
-            const d = workshopData[currentTheme].img;
-            const text = `Erstelle ein Bild:\nZiel: ${d.ziel}\nHauptmotiv: ${d.motiv}\nHandlung: ${d.handlung}\nUmgebung: ${d.umgebung}\nStil: ${d.stil}\nBeleuchtung: ${d.beleuchtung}\nDetails: ${d.details}`;
-            navigator.clipboard.writeText(text).then(() => alert("Bild-Prompt kopiert!"));
+        function renderImageGrid(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            Object.entries(workshopData).forEach(([themeKey, data]) => {
+                const card = document.createElement('article');
+                card.className = 'theme-card';
+
+                const header = document.createElement('div');
+                header.className = 'theme-card-header';
+                const badge = document.createElement('span');
+                badge.className = 'theme-badge';
+                badge.textContent = data.title;
+                header.appendChild(badge);
+                card.appendChild(header);
+
+                const fields = [
+                    ['Ziel', data.img.ziel],
+                    ['Hauptmotiv', data.img.motiv],
+                    ['Handlung', data.img.handlung],
+                    ['Umgebung', data.img.umgebung],
+                    ['Stil', data.img.stil],
+                    ['Beleuchtung', data.img.beleuchtung],
+                    ['Details', data.img.details]
+                ];
+                fields.forEach(([label, value]) => {
+                    const wrapper = document.createElement('div');
+                    const title = document.createElement('span');
+                    title.className = 'text-xs uppercase tracking-wide text-stone-500 font-bold block';
+                    title.textContent = label;
+                    const text = document.createElement('p');
+                    text.className = 'text-stone-800 text-sm';
+                    text.textContent = value;
+                    wrapper.appendChild(title);
+                    wrapper.appendChild(text);
+                    card.appendChild(wrapper);
+                });
+
+                const actions = createActionButtons({
+                    onOpen: () => openImagePrompt(themeKey),
+                    onCopy: (btn) => copyImagePrompt(themeKey, btn)
+                });
+                if (actions) card.appendChild(actions);
+
+                container.appendChild(card);
+            });
+        }
+
+        function copySystemPrompt(themeKey, button) {
+            const text = workshopData[themeKey]?.sys?.prompt;
+            if (!text) return;
+            copyToClipboard(text, button);
+        }
+
+        function renderSystemGrid(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            Object.entries(workshopData).forEach(([themeKey, data]) => {
+                const card = document.createElement('article');
+                card.className = 'theme-card';
+
+                const header = document.createElement('div');
+                header.className = 'theme-card-header';
+                const badge = document.createElement('span');
+                badge.className = 'theme-badge';
+                badge.textContent = data.title;
+                const temp = document.createElement('span');
+                temp.className = 'text-xs font-semibold text-stone-500';
+                temp.textContent = `Temperature: ${data.sys?.temp ?? '-'}`;
+                header.appendChild(badge);
+                header.appendChild(temp);
+                card.appendChild(header);
+
+                const body = document.createElement('pre');
+                body.textContent = data.sys.prompt;
+                card.appendChild(body);
+
+                const actions = createActionButtons({
+                    onOpen: null,
+                    onCopy: (btn) => copySystemPrompt(themeKey, btn)
+                });
+                if (actions) card.appendChild(actions);
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderScenarioPrintGrid() {
+            const container = document.getElementById('scenario-print-grid');
+            if (!container) return;
+            container.innerHTML = '';
+            Object.entries(workshopData).forEach(([themeKey, data]) => {
+                const card = document.createElement('article');
+                card.className = 'theme-card';
+
+                const header = document.createElement('div');
+                header.className = 'theme-card-header';
+                const badge = document.createElement('span');
+                badge.className = 'theme-badge';
+                badge.textContent = data.title;
+                header.appendChild(badge);
+                card.appendChild(header);
+
+                const desc = document.createElement('p');
+                desc.className = 'text-sm text-stone-700';
+                desc.textContent = data.desc;
+                card.appendChild(desc);
+
+                const material = document.createElement('pre');
+                material.className = 'prompt-single';
+                material.textContent = data.material;
+                card.appendChild(material);
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderAllThemeSections() {
+            renderPromptGrid('prompt-zero-grid', data => data.zero, { includeMaterial: true });
+            renderPromptGrid('prompt-few-grid', data => data.few, { includeMaterial: true });
+            renderPromptGrid('prompt-persona-grid', data => data.persona, { includeMaterial: true });
+            renderPromptGrid('cot-grid', data => data.cot, { includeMaterial: true });
+            renderPromptGrid('iteration-grid', data => data.iteration, { includeMaterial: true });
+            renderPromptGrid('grounding-grid', data => data.grounding, { includeMaterial: true });
+            renderPromptGrid('sys-idea-grid', data => data.sysIdea, { includeMaterial: true });
+            renderKraftGrid('kraft-grid');
+            renderImageGrid('img-grid');
+            renderSystemGrid('sys-grid');
+            renderScenarioPrintGrid();
         }
 
         const workshopData = {
@@ -999,7 +1570,7 @@
                 desc: "Ein aggressiver Wettbewerber hat eine neue Dienstleistung angekündigt, die euer Kerngeschäft bedroht. Du musst die strategischen Auswirkungen bewerten und Argumente vorbereiten.",
                 material: `**Pressemitteilung von NextGen-Consulting:**\n"Frankfurt, 25.09.2025 – NextGen-Consulting startet die 'SAP-Turbo-Initiative'. Ab sofort bieten wir S/4HANA-Migrationen zum garantierten Festpreis an, der 30% unter dem Marktdurchschnitt liegt. Durch den Einsatz unserer proprietären 'Auto-Code-AI' reduzieren wir den manuellen Berateraufwand um die Hälfte. Unser CEO sagt: 'Warum teure Stundenlöhne für Junior-Berater zahlen, wenn unsere KI den Code in Sekunden schreibt? Die Zeit der klassischen 'Body-Leasing'-Beratung ist vorbei.'"`,
                 zero: "Fasse die Pressemitteilung zusammen. Ist das eine Gefahr für uns als Aequitas AG?",
-                few: `Aufgabe: Bewerte Wettbewerber-News für das Account-Team.\nFormat:\n- Lageeinschätzung (1 Satz)\n- Risiken (max. 2 Bullet Points)\n- Gegenargumente (max. 2 Bullet Points)\n\nBeispiel 1\nInput: "Vendor Alpha kündigt 'S/4 Fast Track' zum Fixpreis an. 20% günstiger, nur für Greenfield, kein Change-Management."\nOutput:\nLageeinschätzung: Standardisierte Greenfield-Offerte, schwach bei komplexen Transformationsprojekten.\nRisiken:\n- Preisdruck bei Neukunden mit kleinem Scope.\n- Erwartungsmanagement bei CFOs, die Fixpreise lieben.\nGegenargumente:\n- Kein Support für Brownfield/Select-ive, damit irrelevant für unsere Bestandskunden.\n- Change-Management fehlt komplett, erhöht Projektrisiko.\n\nBeispiel 2\nInput: "ConsultingBeta investiert 5 Mio. EUR in eigenes KI-Migrationsstudio und kündigt 6-Wochen-MVPs an."\nOutput:\nLageeinschätzung: PR-getriebenes MVP-Angebot, adressiert eher Pilotkunden.\nRisiken:\n- Buzz bei Innovationsabteilungen.\nGegenargumente:\n- Kein Skalierungsbeweis, MVP deckt keine Core-Finance-Prozesse ab.\n- Unsere Referenzen zeigen vollständige Rollouts statt Demos.\n\nInput Neu: [Pressemitteilung NextGen]\nOutput:`,
+                few: `Aufgabe: Bewerte Wettbewerber-News für das Account-Team.\n\nBeispiel 1\nInput: "Vendor Alpha kündigt 'S/4 Fast Track' zum Fixpreis an. 20% günstiger, nur für Greenfield, kein Change-Management."\nOutput:\nLageeinschätzung: Standardisierte Greenfield-Offerte, schwach bei komplexen Transformationsprojekten.\nRisiken:\n- Preisdruck bei Neukunden mit kleinem Scope.\n- Erwartungsmanagement bei CFOs, die Fixpreise lieben.\nGegenargumente:\n- Kein Support für Brownfield/Select-ive, damit irrelevant für unsere Bestandskunden.\n- Change-Management fehlt komplett, erhöht Projektrisiko.\n\nInput Neu: [Pressemitteilung NextGen]\nOutput:`,
                 persona: "Handle als erfahrener Vertriebsleiter im IT-Consulting. Analysiere die Pressemitteilung. Welche 3 Gegenargumente können wir nutzen?",
                 cot: "Analysiere die Wettbewerber-Meldung Schritt für Schritt:\n1. Was ist das Versprechen?\n2. Wo ist der Haken (Qualität, Individualität)?\n3. Wie positionieren wir uns dagegen?",
                 iteration: "Gut. Formuliere daraus nun einen 'Battle-Card'-Spickzettel für unsere Sales-Kollegen.",
@@ -1014,14 +1585,15 @@
                     beleuchtung: "Kühles, blaues Licht auf den Würfeln. Warmes, goldenes Licht strahlt vom Diamanten aus.",
                     details: "Auf den grauen Würfeln steht winzig '08/15'. Der Diamant reflektiert menschliche Gesichter."
                 },
-                sys: { prompt: "Du bist ein disruptiver Strategieberater. Du hasst Standardlösungen.", temp: 1.1 }
+                sys: { prompt: "Du bist ein disruptiver Strategieberater. Du hasst Standardlösungen.", temp: 1.1 },
+                sysIdea: "Nutze das Material und liste in einer Tabelle drei Aussagen der Konkurrenz mit je einer Schwachstelle und unserem Gegenangriff. Fasse anschließend in zwei Sätzen zusammen, wie Sales das einsetzt."
             },
             recruiting: {
                 title: "Recruiting & Ops",
                 desc: "Der Beratermarkt ist leergefegt. Die Geschäftsführung will eine interne 'AI-Taskforce' gründen. Entwirf eine interne Stellenausschreibung.",
                 material: `**Interne Notiz:**\n"Profil Lead AI-Taskforce (m/w/d) – Internes Projekt: Wir brauchen jemanden aus den eigenen Reihen, der das Thema 'Generative AI' bei uns treibt.\nAufgaben: Identifikation von KI-Use-Cases, Tool-Auswahl, Schulung.\nAnforderungen: Muss Business verstehen, aber technisch fit sein. Lust, Prozesse neu zu denken."`,
                 zero: "Schreibe eine Stellenausschreibung für den AI-Lead basierend auf der Notiz.",
-                few: `Aufgabe: Schreibe eine interne Stellenausschreibung, die Senior Consultants anspricht.\nFormat:\n1. Titel + Hook (1 Satz, "Du"-Ansprache)\n2. Mission (2 Bullet Points)\n3. Dein Profil (3 Bullet Points, Mischung aus Business & Tech)\n4. Impact-Satz (Warum jetzt?)\n\nBeispiel 1\nInput: "Wir suchen jemanden, der die BI-Transformation treibt. Muss Finance verstehen, Data Governance aufsetzen, viel Stakeholder-Management."\nOutput:\nTitel: "Du baust unsere BI-Revolution"\nMission:\n- Priorisiere BI-Use-Cases mit CFO-Impact.\n- Setze Data-Governance-Richtlinien unternehmensweit durch.\nDein Profil:\n- Senior Consultant Finance oder Analytics mit Transformationsprojekten.\n- Stark in Storylining, aber bereit, selbst in Datenmodelle zu springen.\n- Moderierst Workshops souverän vom Werk bis zum Vorstand.\nImpact: Jetzt ist Window of Opportunity – der Vorstand hat Budget freigegeben, wir brauchen deinen Drive.\n\nBeispiel 2\nInput: "Brauchen internen Lead für Automation. Aufgaben: Bots identifizieren, Tools auswählen, Teams trainieren. Muss Consulting-Skills mitbringen."\nOutput: [gleiches Format wie oben]\nTitel: "Werde unser Automation-Captain"\nMission:\n- Identifiziere Prozesse mit >500 Std. Einsparpotenzial.\n- Entscheide Toolstack und etabliere Governance.\nDein Profil:\n- 6+ Jahre Projektleitung im Consulting.\n- Tech-affin: VBA, Python oder Low-Code ist dir nicht fremd.\n- Begeisterst Teams für Veränderungen.\nImpact: Ohne dich stagniert unser Effizienzprogramm – du hast Visibilität beim Vorstand.\n\nInput Neu: [Interne Notiz]\nOutput:`,
+                few: `Aufgabe: Schreibe eine interne Stellenausschreibung, die Senior Consultants anspricht.\n\nBeispiel 1\nInput: "Wir suchen jemanden, der die BI-Transformation treibt. Muss Finance verstehen, Data Governance aufsetzen, viel Stakeholder-Management."\nOutput:\nTitel: "Du baust unsere BI-Revolution"\nMission:\n- Priorisiere BI-Use-Cases mit CFO-Impact.\n- Setze Data-Governance-Richtlinien unternehmensweit durch.\nDein Profil:\n- Senior Consultant Finance oder Analytics mit Transformationsprojekten.\n- Stark in Storylining, aber bereit, selbst in Datenmodelle zu springen.\n- Moderierst Workshops souverän vom Werk bis zum Vorstand.\nImpact: Jetzt ist Window of Opportunity – der Vorstand hat Budget freigegeben, wir brauchen deinen Drive.\n\nInput Neu: [Interne Notiz]\nOutput:`,
                 persona: "Du bist Senior HR Business Partner. Formuliere die Stelle so, dass sie für einen erfahrenen Senior Consultant attraktiv klingt.",
                 cot: "Erstelle die Stellenausschreibung Schritt für Schritt:\n1. Analysiere die Notiz: Was sind die Schmerzpunkte?\n2. Definiere Zielgruppe.\n3. Formuliere 3 Benefits.",
                 iteration: "Der Entwurf klingt zu bürokratisch. Wechsle auf 'Du' und nutze Consulting-Sprech wie 'Impact' oder 'Visibility'.",
@@ -1036,14 +1608,15 @@
                     beleuchtung: "Helles Tageslicht von oben, ergänzt durch das violette Leuchten der Datenseite.",
                     details: "Die Brücke unter den Füßen beginnt sich zu transformieren – von Stein zu Glasfaser."
                 },
-                sys: { prompt: "Du bist Chief People Officer. Dein Stil ist inklusiv und inspirierend.", temp: 0.8 }
+                sys: { prompt: "Du bist Chief People Officer. Dein Stil ist inklusiv und inspirierend.", temp: 0.8 },
+                sysIdea: "Schreibe einen internen Post für das Intranet: Hook, Mission, drei Benefits, Call-to-Action. Sprich explizit Senior Consultants an, die Lust auf Ownership beim AI-Taskforce-Aufbau haben."
             },
             pm: {
                 title: "PM & Eskalation",
                 desc: "Kritischer Fehler kurz vor Go-Live. Erstelle einen Statusbericht und eine Deeskalations-Mail.",
                 material: `**Incident-Report 'Phoenix':**\nStatus: ROT.\nEreignis: Timeouts beim Integrationstest.\nAnalyse: Middleware zusammengebrochen. Server am Limit. Custom-Code erzeugt Endlosschleifen.\nAuswirkung: Go-Live gefährdet.\nEmpfehlung: Taskforce bilden.`,
                 zero: "Fasse den Incident-Report zusammen und schreibe eine Mail an den Kunden.",
-                few: `Aufgabe: Erstelle ein Krisen-Update für C-Level in drei Bausteinen.\nFormat:\n1. Status (Ampel + 1 Satz)\n2. Fakten (max. 3 Bullet Points mit Ursache + Auswirkung)\n3. Maßnahmen (Tabelle Maßnahme | Owner | ETA)\n\nBeispiel 1\nInput: "Testumgebung seit 6h down wegen Storage-Ausfall. Release Go-Live in 3 Tagen."\nOutput:\nStatus: ROT – Testsysteme nicht verfügbar, Go-Live-Fenster schrumpft.\nFakten:\n- Storage-Controller defekt -> keine Deployments möglich.\n- Regression-Tests stehen still, 24h Rückstand.\n- Anbieter liefert Ersatzteil erst morgen 08:00.\nMaßnahmen:\n- Notfall-Hardware | Infra Team | 06.10. 07:00\n- Parallel Cloud-Umgebung aufsetzen | DevOps | 06.10. 12:00\n- Tests priorisieren (Top 20) | QA Lead | 06.10. 18:00\n\nBeispiel 2\nInput: "Data-Migration liefert falsche Wechselkurse, Finance sign-off blockiert."\nOutput: [gleiches Format]\nStatus: GELB – Finance-Sign-off blockiert, aber Workaround verfügbar.\nFakten:\n- Mapping-Fehler im ETL, Kurse Juli'24 doppelt.\n- Audit-Team fordert Korrektur vor Cutover.\n- Migration kann lokal korrigiert werden, Aufwand 6 Std.\nMaßnahmen:\n- Mapping-Skript fixen | Data Lead | 04.05. 14:00\n- Finance-Validierung | CFO-Office | 04.05. 16:00\n- Regression-Tests | QA Lead | 04.05. 20:00\n\nInput Neu: [Incident Report]\nOutput:`,
+                few: `Aufgabe: Erstelle ein Krisen-Update für C-Level in drei Bausteinen.\n\nBeispiel 1\nInput: "Testumgebung seit 6h down wegen Storage-Ausfall. Release Go-Live in 3 Tagen."\nOutput:\nStatus: ROT – Testsysteme nicht verfügbar, Go-Live-Fenster schrumpft.\nFakten:\n- Storage-Controller defekt -> keine Deployments möglich.\n- Regression-Tests stehen still, 24h Rückstand.\n- Anbieter liefert Ersatzteil erst morgen 08:00.\nMaßnahmen:\n- Notfall-Hardware | Infra Team | 06.10. 07:00\n- Parallel Cloud-Umgebung aufsetzen | DevOps | 06.10. 12:00\n- Tests priorisieren (Top 20) | QA Lead | 06.10. 18:00\n\nInput Neu: [Incident Report]\nOutput:`,
                 persona: "Du bist Krisenmanager. Formuliere die Mail an Müller AG. Sei transparent, aber vermeide Panik.",
                 cot: "Plane die Kommunikation Schritt für Schritt:\n1. Welche Fakten müssen genannt werden?\n2. Was lassen wir weg?\n3. Neuer Zeitplan?",
                 iteration: "Der Ton ist zu defensiv. Formuliere selbstbewusster und lösungsorientierter.",
@@ -1058,17 +1631,17 @@
                     beleuchtung: "Dramatischer Kontrast: Alarmierendes Rot unten, beruhigendes Tech-Blau oben.",
                     details: "Im Hintergrund ein Status-Monitor, dessen Kurve gerade wieder steil nach oben zeigt."
                 },
-                sys: { prompt: "Du bist militärischer Strategie-Berater. Antworte extrem kurz und faktenbasiert.", temp: 0.3 }
+                sys: { prompt: "Du bist militärischer Strategie-Berater. Antworte extrem kurz und faktenbasiert.", temp: 0.3 },
+                sysIdea: "Erstelle ein 3-Teil-Update für den Kunden (Faktenlage, Maßnahmen mit Owner/ETA, Erwartungsmanagement). Schliesse mit einer klaren Bitte an die Müller AG, wie sie unterstützen kann."
             },
             tech: {
                 title: "SAP Dev & Basis",
                 desc: "Ein Z-Report sorgt für Lastspitzen. Analysiere den Legacy Code und erkläre das Problem.",
                 material: `**Code-Snippet (ABAP):**\nLOOP AT lt_sales_orders INTO ls_order.\n  SELECT SINGLE * FROM mara ...\n  IF sy-subrc = 0.\n    SELECT SINGLE * FROM makt ...\n  ENDIF.\nENDLOOP.\nKontext: 50.000 Einträge.`,
                 zero: "Was ist an diesem ABAP-Code schlecht und wie mache ich ihn schneller?",
-                few: `Aufgabe: Erstelle eine Performance-Review für ABAP-Code.\nFormat:\n- Problemüberschrift (max. 1 Satz)\n- Warum langsam? (2 Bullet Points mit Technik-Bezug)\n- Fix-Vorschlag (Pseudo-Code oder Kurzbeschreibung)\n\nBeispiel 1\nInput: "SELECT * FROM sflight WHERE carrid = lv_id, danach LOOP zur Aggregation."\nOutput:\nProblem: Vollständige Tabellen-Scans und unnötige Spalten lesen die DB leer.\nWarum langsam?\n- SELECT * zieht 30+ Spalten, obwohl nur 4 Werte genutzt werden.\n- Keine Aggregation auf DB, daher hohe Netzwerk-Last.\nFix: SELECT carrid, connid, price FROM sflight WHERE carrid = @lv_id INTO TABLE @lt_flights; dann Aggregation via REDUCE.\n\nBeispiel 2\nInput: "LOOP AT it_customers. SELECT SINGLE * FROM kna1 WHERE kunnr = ls_customer-kunnr."\nOutput:\nProblem: SELECT SINGLE im Loop erzeugt tausende Roundtrips.\nWarum langsam?\n- Für 40k Kunden entsteht 40k x DB-Zugriff.\n- Kein Buffer/Join genutzt, blockiert Dialog-Workprozesse.\nFix: SELECT kunnr, name1 FROM kna1 FOR ALL ENTRIES IN @it_customers INTO TABLE @lt_kna1; LOOP mit READ TABLE auf lt_kna1.\n\nInput Neu: [Legacy Code]\nOutput:`,
+                few: `Aufgabe: Erstelle eine Performance-Review für ABAP-Code.\n\nBeispiel 1\nInput: "SELECT * FROM sflight WHERE carrid = lv_id, danach LOOP zur Aggregation."\nOutput:\nProblem: Vollständige Tabellen-Scans und unnötige Spalten lesen die DB leer.\nWarum langsam?\n- SELECT * zieht 30+ Spalten, obwohl nur 4 Werte genutzt werden.\n- Keine Aggregation auf DB, daher hohe Netzwerk-Last.\nFix: SELECT carrid, connid, price FROM sflight WHERE carrid = @lv_id INTO TABLE @lt_flights; dann Aggregation via REDUCE.\n\nInput Neu: [Legacy Code]\nOutput:`,
                 persona: "Du bist SAP Performance Experte. Erkläre einem nicht-technischen Kollegen das Problem.",
                 cot: "Analysiere den Code Schritt für Schritt:\n1. Identifiziere DB-Zugriffe in Schleifen.\n2. Berechne theoretische Last.\n3. Lösungsvorschlag.",
-                iteration: "Erkläre es für einen Vertriebler: Warum ist der Link zur externen IP gefährlich?", /* Note: Keeping original iteration request from prompt instruction or adapting to code context? Adapting to code context for consistency */
                 iteration: "Schreibe den optimierten Code mit Modern ABAP Syntax.",
                 grounding: "Analysiere *ausschließlich* das Snippet: Aus welchen Tabellen wird selektiert?",
                 kraft: { k: "Performance-Problem durch Select in Loop.", r: "SAP Performance Experte.", a: "Erkläre Problem für Nicht-Techies.", f: "Metapher + Fakten.", t: "Bildhaft, kompetent." },
@@ -1081,13 +1654,17 @@
                     beleuchtung: "Viele rote Bremslichter auf der linken Seite, ein langer grüner Lichtstreifen (Motion Blur) auf der rechten Seite.",
                     details: "Die Lieferwagen sind beschriftet mit 'SELECT SINGLE'. Der Zug trägt das Logo 'HANA OPTIMIZED'."
                 },
-                sys: { prompt: "Du bist strikter Code-Compiler. Nur Code, kein Smalltalk.", temp: 0.2 }
+                sys: { prompt: "Du bist strikter Code-Compiler. Nur Code, kein Smalltalk.", temp: 0.2 },
+                sysIdea: "Beschreibe zuerst mit einer Metapher, warum SELECT SINGLE im Loop wie Stau wirkt. Liefere danach Optimierungsschritte inkl. modernem ABAP-Codeblock, der die Zugriffe bündelt."
             }
         };
 
         let currentTheme = 'sales';
 
-        document.addEventListener('DOMContentLoaded', () => { setTheme('sales'); });
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme('sales');
+            renderAllThemeSections();
+        });
 
         function setTheme(key) {
             currentTheme = key;
@@ -1106,16 +1683,27 @@
             document.getElementById('scenario-desc').innerText = d.desc;
             document.getElementById('scenario-text').innerText = d.material;
             
-            document.getElementById('prompt-zero').innerText = d.zero;
-            document.getElementById('prompt-few').innerText = d.few;
-            document.getElementById('prompt-persona').innerText = d.persona;
+            document.getElementById('prompt-zero-single').innerText = d.zero;
+            document.getElementById('prompt-few-single').innerText = d.few;
+            document.getElementById('prompt-persona-single').innerText = d.persona;
+            document.getElementById('cot-single').innerText = d.cot;
+            document.getElementById('iteration-single').innerText = d.iteration;
+            document.getElementById('grounding-single').innerText = d.grounding;
+
+            document.getElementById('prompt-zero-theme').innerText = d.title;
+            document.getElementById('prompt-few-theme').innerText = d.title;
+            document.getElementById('prompt-persona-theme').innerText = d.title;
+            document.getElementById('cot-theme').innerText = d.title;
+            document.getElementById('iteration-theme').innerText = d.title;
+            document.getElementById('grounding-theme').innerText = d.title;
             
-            document.getElementById('cot-prompt').innerText = d.cot;
-            document.getElementById('iteration-prompt').innerText = d.iteration;
+            document.getElementById('kraft-theme-label').innerText = d.title;
+            document.getElementById('kraft-k').innerText = d.kraft.k;
+            document.getElementById('kraft-r').innerText = d.kraft.r;
+            document.getElementById('kraft-a').innerText = d.kraft.a;
+            document.getElementById('kraft-f').innerText = d.kraft.f;
+            document.getElementById('kraft-t').innerText = d.kraft.t;
             
-            document.getElementById('grounding-prompt').innerText = d.grounding;
-            
-            // Visuals
             document.getElementById('img-ziel').innerText = d.img.ziel;
             document.getElementById('img-motiv').innerText = d.img.motiv;
             document.getElementById('img-handlung').innerText = d.img.handlung;
@@ -1124,46 +1712,16 @@
             document.getElementById('img-beleuchtung').innerText = d.img.beleuchtung;
             document.getElementById('img-details').innerText = d.img.details;
             
-            // System
             document.getElementById('sys-prompt').innerText = d.sys.prompt;
-            
-            updateKraft('k');
+            document.getElementById('sys-idea-single').innerText = d.sysIdea;
+            document.getElementById('sys-idea-theme').innerText = d.title;
             updateGauge(d.sys.temp);
         }
 
-        function updateKraft(l) {
-            const d = workshopData[currentTheme].kraft;
-            const map = {k:'[K]ontext', r:'[R]olle', a:'[A]ufgabe', f:'[F]ormat', t:'[T]on'};
-            const expl = {k:'Wo stehen wir?', r:'Wer bist du?', a:'Was tun?', f:'Wie darstellen?', t:'Wie klingen?'};
-            
-            document.getElementById('kraft-letter-display').innerText = map[l].toUpperCase();
-            document.getElementById('kraft-content').innerText = d[l];
-            document.getElementById('kraft-explanation').innerText = expl[l];
-            document.getElementById('kraft-theme-badge').innerText = workshopData[currentTheme].title;
-
-            document.querySelectorAll('.kraft-btn').forEach(b => {
-                b.classList.remove('border-orange-500', 'bg-stone-50', 'text-stone-800');
-                b.classList.add('border-transparent', 'text-stone-500');
-            });
-            document.querySelector(`.kraft-btn[data-letter="${l}"]`).classList.add('border-orange-500', 'bg-stone-50', 'text-stone-800');
-        }
-
-        function copyText(id) {
-            const text = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(text).then(() => alert("Kopiert!"));
-        }
-
-        function copyKraft() {
-            const d = workshopData[currentTheme].kraft;
-            const material = workshopData[currentTheme].material;
-            const text = `${material}\n\n[K]ontext: ${d.k}\n[R]olle: ${d.r}\n[A]ufgabe: ${d.a}\n[F]ormat: ${d.f}\n[T]on: ${d.t}`;
-            navigator.clipboard.writeText(text).then(() => alert("KRAFT Prompt kopiert!"));
-        }
-
-        function copyImgPrompt() {
-            const d = workshopData[currentTheme].img;
-            const text = `Erstelle ein Bild:\nZiel: ${d.ziel}\nHauptmotiv: ${d.motiv}\nHandlung: ${d.handlung}\nUmgebung: ${d.umgebung}\nStil: ${d.stil}\nBeleuchtung: ${d.beleuchtung}\nDetails: ${d.details}`;
-            navigator.clipboard.writeText(text).then(() => alert("Bild-Prompt kopiert!"));
+        function copyText(id, button) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            copyToClipboard(el.innerText, button);
         }
 
         function updateGauge(val) {
