@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KI-Training: OpenWebUI Grundlagen</title>
+    <style>
+        :root {
+            --primary-color: #0f172a; /* Slate 900 */
+            --accent-color: #f97316; /* Orange 500 */
+            --bg-color: #f8fafc; /* Slate 50 */
+            --card-bg: #ffffff;
+            --text-color: #334155; /* Slate 700 */
+            --sidebar-width: 280px;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .sidebar h2 {
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            color: var(--accent-color);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        .nav-links {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 12px 15px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            opacity: 0.7;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        .header-section {
+            margin-bottom: 50px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        /* Exercise Cards */
+        .exercise-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exercise-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background-color: var(--accent-color);
+        }
+
+        .step-number {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .scenario-box {
+            background-color: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .action-box {
+            margin-top: 25px;
+        }
+
+        /* Prompt Display */
+        .prompt-container {
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .prompt-header {
+            background-color: rgba(255,255,255,0.05);
+            padding: 8px 15px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .prompt-code {
+            padding: 15px;
+            color: var(--code-text);
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* UI Steps List */
+        .ui-steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+        }
+
+        .ui-steps li {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 10px;
+        }
+
+        .ui-steps li::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .path-highlight {
+            background-color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Warning/Tip */
+        .tip-box {
+            display: flex;
+            align-items: flex-start;
+            background-color: #fff7ed;
+            border: 1px solid #fed7aa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #9a3412;
+        }
+
+        .tip-icon {
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                overflow: auto;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 10px;
+            }
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>⚡ OpenWebUI Basics</h2>
+        <div class="nav-links">
+            <a href="#intro" class="nav-link active">Start & Szenario</a>
+            <a href="#ex1" class="nav-link">1. Brainstorming</a>
+            <a href="#ex2" class="nav-link">2. Erster Entwurf</a>
+            <a href="#ex3" class="nav-link">3. Prompt Optimierung</a>
+            <a href="#ex4" class="nav-link">4. Zweiter Entwurf</a>
+            <a href="#ex5" class="nav-link">5. Vergleich</a>
+            <a href="#ex6" class="nav-link">6. Prompt Library</a>
+            <a href="#ex7" class="nav-link">7. System Prompts</a>
+            <a href="#ex8" class="nav-link">8. Wissensdatenbank</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            
+            <div id="intro" class="header-section">
+                <h1>Praxis-Workshop</h1>
+                <p class="subtitle">Effizienter Einsatz von OpenWebUI bei der BBH.</p>
+                <div class="scenario-box">
+                    <strong>Das Szenario:</strong><br>
+                    Sie möchten eine Antwort auf eine Anfrage einer Ihrer Mandanten formulieren. Wählen Sie ein aktuelles Thema aus Ihrer Praxis, z.B. "Rechtliche Hürden bei Mieterstrommodellen"<br><em>Email vom Mandanten: "Ich habe vom 'Solarpaket I' gehört. Lohnt sich jetzt eher das klassische Mieterstrommodell oder die neue Gemeinschaftliche Gebäudeversorgung? Was sind die rechtlichen Hürden?"</em>
+                </div>
+            </div>
+
+            <!-- Aufgabe 1 -->
+            <div id="ex1" class="exercise-card">
+                <span class="step-number">Aufgabe 1</span>
+                <h3>Brainstorming & Argumentation</h3>
+                <p>Bevor wir schreiben, möchten wir uns inspirieren lassen. Wir lassen die KI die Argumentationsstruktur aufbauen.</p>
+                
+                <div class="action-box">
+                    <strong>Ihre Aktion:</strong> Öffnen Sie OpenWebUI und starten Sie einen <span class="path-highlight">Neuen Chat</span> mit dem Sprachmodell <span class="path-highlight">GPT-5-mini</span> und lassen Sie sich Argumente für Ihr Thema geben.
+                </div>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Beispieleingabe (Prompt)</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p1')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p1">Nenne mir 5 Gliederungspunkte oder juristische Hauptargumente für ein Mandantenschreiben zu dem Thema: "Rechtliche Hürden bei Mieterstrommodellen im Vergleich zur Gemeinschaftlichen Gebäudeversorgung nach Solarpaket I".</div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 2 -->
+            <div id="ex2" class="exercise-card">
+                <span class="step-number">Aufgabe 2</span>
+                <h3>Erste Version erstellen</h3>
+                <p>Wir erstellen einen ersten schnellen Entwurf, um eine Basis zu haben.</p>
+                
+                <div class="action-box">
+                    <strong>Ihre Aktion:</strong>Starten Sie einen <span class="path-highlight">Neuen Chat</span> mit dem Sprachmodell <span class="path-highlight">GPT-5.1</span> und bitten Sie um einen Entwurf basierend auf den besten Argumenten aus Aufgabe 1. Benennen Sie den Chat anschließend passend (z.B. "Mieterstrom vs. GGV Version 1").
+                </div>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Beispieleingabe (Prompt)</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p2')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p2">Verfasse basierend auf den folgenden Punkten ein Beratungsschreiben an einen Mandanten zum Thema "Rechtliche Hürden bei Mieterstrommodellen im Vergleich zur Gemeinschaftlichen Gebäudeversorgung nach Solarpaket I". 
+                        <p><b>1. Entfall der energiewirtschaftlichen Vollversorgerpflicht</b>
+Argument: Die größte rechtliche Hürde beim klassischen Mieterstrom (§ 42a EnWG a.F./n.F.) ist die Pflicht des Anlagenbetreibers, den Mieter auch dann mit Strom zu beliefern, wenn die PV-Anlage keinen Strom produziert (Reststromlieferung).
+
+Hürde Mieterstrom: Der Vermieter wird faktisch zum Energieversorgungsunternehmen (EVU) mit allen damit verbundenen Risiken am Spotmarkt und administrativen Pflichten.
+
+Vorteil GGV: Bei der GGV entfällt diese Pflicht. Es handelt sich um eine reine Zusatzversorgung. Der Mieter behält seinen eigenen Reststromliefervertrag mit einem externen Versorger. Der Vermieter verkauft nur den tatsächlich erzeugten PV-Strom („Ernte ist Ernte“).</p>
+
+<p><b>2. Reduktion der Lieferantenpflichten und Meldeauflagen</b>
+Argument: Das Solarpaket I hat die GGV weitgehend von den strengen regulatorischen Pflichten befreit, die für Elektrizitätsversorgungsunternehmen gelten.
+
+Hürde Mieterstrom: Hoher Verwaltungsaufwand durch Meldepflichten bei der Bundesnetzagentur, komplexe Stromkennzeichnungspflichten und die Einhaltung strenger Rechnungslegungsvorschriften (§§ 40 ff. EnWG).
+
+Vorteil GGV: Der Betreiber unterliegt nicht den strengen Lieferantenpflichten des EnWG. Die Abwicklung ist privatrechtlich und buchhalterisch deutlich schlanker (ähnlich der Heizkostenabrechnung).</p>
+
+<p><b>3. Vertragsfreiheit vs. Gesetzliche Preisobergrenze (Mieterstromzuschlag)</b>
+Argument: Die Wirtschaftlichkeit von Mieterstrommodellen leidet oft unter der gesetzlichen Preiskopplung, die im Gegenzug für die Förderung verlangt wird.
+
+Hürde Mieterstrom: Der Strompreis im Mieterstromvertrag darf 90 % des örtlichen Grundversorgertarifs nicht überschreiten (§ 42a Abs. 4 EnWG). Dies deckelt die Einnahmen trotz steigender Investitionskosten, um den Mieterstromzuschlag nach dem EEG zu erhalten.
+
+Vorteil GGV: Es gibt keine gesetzliche Preisobergrenze (abgesehen von Wucher/Sittenwidrigkeit). Der Preis für den Solarstrom kann frei verhandelt werden. Zwar entfällt der Mieterstromzuschlag (Förderung), aber die eingesparten Verwaltungskosten kompensieren dies in kleineren und mittleren Objekten oft überproportional.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 3 -->
+            <div id="ex3" class="exercise-card">
+                <span class="step-number">Aufgabe 3</span>
+                <h3>Prompt Optimierung (Meta-Prompting)</h3>
+                <p>Wir lassen die KI ihren eigenen Prompt verbessern. Das deckt logische Lücken auf und erhöht die Präzision.</p>
+                
+                <div class="action-box">
+                    <strong>Ihre Aktion:</strong> Starten Sie einen <span class="path-highlight">Neuen Chat</span> mit dem Sprachmodell <span class="path-highlight">GPT-5.1</span> und bitten Sie um eine Optimierung des Prompts aus Aufgabe 2 indem Sie Ihren Prompt aus Aufgabe 2 kopieren und um Optimierung des Prompts bitten.
+                </div>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Eingabe (Prompt)</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p3')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p3">Optimiere meinen Prompt, damit das Ergebnis präziser, juristisch schärfer formuliert und für einen Fachexperten geeignet ist. 
+
+WICHTIG: Wenn wichtige Informationen fehlen (z.B. Risikobereitschaft des Mandanten, Art der Immobilie), bitte mich zuerst um die Informationen.
+
+<b>MEIN PROMPT:</b>
+Verfasse basierend auf den folgenden Punkten ein Beratungsschreiben an einen Mandanten zum Thema "Rechtliche Hürden bei Mieterstrommodellen im Vergleich zur Gemeinschaftlichen Gebäudeversorgung nach Solarpaket I". 
+                        <p><b>1. Entfall der energiewirtschaftlichen Vollversorgerpflicht</b>
+Argument: Die größte rechtliche Hürde beim klassischen Mieterstrom (§ 42a EnWG a.F./n.F.) ist die Pflicht des Anlagenbetreibers, den Mieter auch dann mit Strom zu beliefern, wenn die PV-Anlage keinen Strom produziert (Reststromlieferung).
+
+Hürde Mieterstrom: Der Vermieter wird faktisch zum Energieversorgungsunternehmen (EVU) mit allen damit verbundenen Risiken am Spotmarkt und administrativen Pflichten.
+
+Vorteil GGV: Bei der GGV entfällt diese Pflicht. Es handelt sich um eine reine Zusatzversorgung. Der Mieter behält seinen eigenen Reststromliefervertrag mit einem externen Versorger. Der Vermieter verkauft nur den tatsächlich erzeugten PV-Strom („Ernte ist Ernte“).</p>
+
+<p><b>2. Reduktion der Lieferantenpflichten und Meldeauflagen</b>
+Argument: Das Solarpaket I hat die GGV weitgehend von den strengen regulatorischen Pflichten befreit, die für Elektrizitätsversorgungsunternehmen gelten.
+
+Hürde Mieterstrom: Hoher Verwaltungsaufwand durch Meldepflichten bei der Bundesnetzagentur, komplexe Stromkennzeichnungspflichten und die Einhaltung strenger Rechnungslegungsvorschriften (§§ 40 ff. EnWG).
+
+Vorteil GGV: Der Betreiber unterliegt nicht den strengen Lieferantenpflichten des EnWG. Die Abwicklung ist privatrechtlich und buchhalterisch deutlich schlanker (ähnlich der Heizkostenabrechnung).</p>
+
+<p><b>3. Vertragsfreiheit vs. Gesetzliche Preisobergrenze (Mieterstromzuschlag)</b>
+Argument: Die Wirtschaftlichkeit von Mieterstrommodellen leidet oft unter der gesetzlichen Preiskopplung, die im Gegenzug für die Förderung verlangt wird.
+
+Hürde Mieterstrom: Der Strompreis im Mieterstromvertrag darf 90 % des örtlichen Grundversorgertarifs nicht überschreiten (§ 42a Abs. 4 EnWG). Dies deckelt die Einnahmen trotz steigender Investitionskosten, um den Mieterstromzuschlag nach dem EEG zu erhalten.
+
+Vorteil GGV: Es gibt keine gesetzliche Preisobergrenze (abgesehen von Wucher/Sittenwidrigkeit). Der Preis für den Solarstrom kann frei verhandelt werden. Zwar entfällt der Mieterstromzuschlag (Förderung), aber die eingesparten Verwaltungskosten kompensieren dies in kleineren und mittleren Objekten oft überproportional.</p>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <span class="tip-icon">💡</span>
+                    <div><strong>Hinweis:</strong> Wenn die KI Rückfragen stellt (z.B. "Ist es eine WEG?"), antworten Sie kurz darauf. Kopieren Sie sich dann den <strong>optimierten Prompt</strong>, den die KI ausgibt.</div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 4 -->
+            <div id="ex4" class="exercise-card">
+                <span class="step-number">Aufgabe 4</span>
+                <h3>Zweite Version (Optimierte Version)</h3>
+                <p>Jetzt nutzen wir den optimierten Prompt, um eine zweite Version zu erzeugen.</p>
+                
+                <div class="action-box">
+                    <strong>Ihre Aktion:</strong> Starten Sie einen <span class="path-highlight">Neuen Chat</span>. Wählen Sie wieder das Modell <span class="path-highlight">GPT-5.1</span> und fügen Sie den optimierten Prompt aus Aufgabe 3 ein. Benennen Sie den Chat anschließend passend (z.B. "Mieterstrom vs. GGV Version 2").
+                </div>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Eingabe (Prompt)</span>
+                    </div>
+                    <div class="prompt-code" style="color: #94a3b8; font-style: italic;">[Fügen Sie hier den optimierten Prompt ein, den die KI in Aufgabe 3 erstellt hat]</div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 5 -->
+            <div id="ex5" class="exercise-card">
+                <span class="step-number">Aufgabe 5</span>
+                <h3>Vergleich der Versionen</h3>
+                <p>Wir nutzen die Multi-Chat-Funktion von OpenWebUI, um die Qualitätsunterschiede zu analysieren.</p>
+                
+                <div class="action-box">
+                    <strong>Ihre Aktion:</strong> Starten Sie einen <span class="path-highlight">Neuen Chat</span> und wählen Sie das Modell <span class="path-highlight">GPT-5.1</span>. Bitten Sie die KI, die beiden Versionen aus Aufgabe 2 und 4 zu vergleichen.
+                </div>
+
+                <ul class="ui-steps">
+                    <li>Klicken Sie im Eingabefeld auf das <strong>(+)</strong> Symbol und anschließend auf Reference Chats.</li>
+                    <li>Wählen Sie den Chat aus <strong>Aufgabe 2</strong> (Erste Version).</li>
+                    <li>Wählen Sie den Chat aus <strong>Aufgabe 4</strong> (Optimierte Version).</li>
+                    <li>Geben Sie dann folgenden Befehl ein:</li>
+                </ul>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Eingabe (Prompt)</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p5')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p5">Vergleiche die beiden referenzierten Beratungsschreiben im Hinblick auf juristische Präzision und Mandantenorientierung. Erstelle eine Tabelle mit den Unterschieden.</div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 6 -->
+            <div id="ex6" class="exercise-card">
+                <span class="step-number">Aufgabe 6</span>
+                <h3>Prompt Library (Vorlagen nutzen)</h3>
+                <p>Sparen Sie Zeit bei wiederkehrenden Aufgaben, indem Sie Vorlagen anlegen.</p>
+                
+                <h4>Schritt A: Prompt anlegen</h4>
+                <ul class="ui-steps">
+                    <li>Klicken Sie links im Menü auf <span class="path-highlight">Workspace</span>.</li>
+                    <li>Wählen Sie den Reiter <span class="path-highlight">Prompts</span>.</li>
+                    <li>Klicken Sie auf <strong>"New Prompt"</strong> (oder das +).</li>
+                    <li>Füllen Sie die Felder wie folgt aus:</li>
+                </ul>
+
+                <div class="scenario-box" style="background: #fff; border: 1px solid #ddd; border-left: 4px solid var(--accent-color);">
+                    <strong>Title:</strong> Power Purchase Agreement Prüfer<br>
+                    <strong>Command:</strong> /ppa-pruefer<br>
+                    <strong>Content:</strong><br>
+                    <em>Du bist ein erfahrener Rechtsanwalt für Energierecht mit Fokus auf Erneuerbare-Energien-Projekte.
+
+Ich gebe dir im Folgenden eine Vertragsklausel aus einem {{Vertragsart}}
+
+Bitte analysiere diese Klausel auf folgende Punkte:
+
+1. **Risiko-Check:** Gibt es Formulierungen, die den aktuellen Regelungen des EEG widersprechen oder den Anlagenbetreiber unangemessen benachteiligen?
+    
+2. **Red Flag:** Markiere unklare Begriffe (z.B. fehlende Definition von 'Höhere Gewalt' im Energiekontext).
+    
+3. **Optimierung:** Schreibe einen konkreten Formulierungsvorschlag, der die Position meines Mandanten (**[z.B. der Anlagenbetreiber]**) rechtssicher stärkt.
+    
+
+Hier ist die Klausel:"</em>
+                </div>
+
+                <h4>Schritt B: Prompt nutzen</h4>
+                <p>Gehen Sie zurück in einen <span class="path-highlight">Neuen Chat</span> und tippen Sie:</p>
+                <div class="prompt-container">
+                    <div class="prompt-code">/ppa-pruefer 
+<b>§ 7 Abnahmeverpflichtung und Vergütung</b>
+
+1. Der Abnehmer verpflichtet sich, den gesamten von der Anlage erzeugten Strom (die "Liefermenge") unabhängig vom aktuellen Börsenpreis abzunehmen und mit einem Festpreis von 85,00 EUR/MWh zu vergüten.
+    
+2. Sollte die Anlage aufgrund von Wartungsarbeiten oder technischen Defekten vorübergehend keinen Strom liefern können, ist der Anlagenbetreiber verpflichtet, die fehlende Menge unverzüglich am Spotmarkt zu beschaffen und dem Abnehmer zum vereinbarten Festpreis zur Verfügung zu stellen, soweit dies wirtschaftlich zumutbar ist.
+    
+3. Fälle von Höherer Gewalt befreien beide Parteien für die Dauer der Störung von ihren Leistungspflichten. Wetterbedingte Erzeugungsschwankungen gelten nicht als Höhere Gewalt.</div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 7 -->
+            <div id="ex7" class="exercise-card">
+                <span class="step-number">Aufgabe 7</span>
+                <h3>System Prompts & Folder (Experten-Modus)</h3>
+                <p>Erstellen Sie einen dauerhaften Arbeitsbereich ("Folder"), in dem die KI eine feste Rolle einnimmt (z.B. "Jurist").</p>
+                
+                <h4>Schritt A: Folder "Jurist" erstellen</h4>
+                <ul class="ui-steps">
+                    <li>Klicken Sie in der linken Seitenleiste neben "Folders" auf das <strong>(+)</strong> Symbol.</li>
+                    <li>Geben Sie dem Folder/Chat den Namen: <strong>"Jurist"</strong>.</li>
+                    <li>Fügen Sie folgenden System Prompt ein:</li>
+                </ul>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>System Prompt</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p7')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p7">Du agierst als hochspezialisierter Fachanwalt für Energierecht und Steuerrecht in einer führenden deutschen Großkanzlei. Deine Aufgabe ist es, juristische Sachverhalte (z.B. nach EnWG, EEG, StromStG, MsbG) mit höchster dogmatischer Präzision zu analysieren.
+
+**Befolge strikt diese Richtlinien:**
+
+1. **Sprachniveau:** Nutze ein gehobenes juristisches Sprachniveau (Fachsprache). Verwende die korrekten Termini technici (z.B. 'Letztverbraucher', 'Mittelbare Betroffenheit', 'Drittbelieferung'). Vermeide umgangssprachliche Vereinfachungen.
+    
+2. **Struktur:** Arbeite, wo sinnvoll, im Gutachtenstil oder Urteilsstil. Trenne strikt zwischen Sachverhalt und rechtlicher Würdigung.
+    
+3. **Referenzierung:** Zitiere einschlägige Normen, Paragraphen und, wenn möglich, relevante BGH- oder BNetzA-Entscheidungen exakt.
+    
+4. **Fokus:** Lege den Schwerpunkt auf rechtliche Risiken, Auslegungsprobleme und formaljuristische Korrektheit. Weise auf strittige Rechtsmeinungen hin.
+    
+5. **Zielgruppe:** Dein Leser ist ein anderer erfahrener Jurist. Erkläre keine Grundlagen, sondern steige direkt tief in die Materie ein.</div>
+                </div>
+
+                <h4>Schritt B: Folder "Kunde" erstellen</h4>
+                <ul class="ui-steps">
+                    <li>Klicken Sie in der linken Seitenleiste neben "Folders" auf das <strong>(+)</strong> Symbol.</li>
+                    <li>Geben Sie dem Folder/Chat den Namen: <strong>"Kunde"</strong>.</li>
+                    <li>Fügen Sie folgenden System Prompt ein:</li>
+                </ul>
+
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>System Prompt</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p7')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p7">Du agierst als strategischer Rechtsberater für Mandanten im Energiesektor (z.B. Stadtwerke, Anlagenbetreiber, Immobilienwirtschaft). Dein Ziel ist es, komplexe energierechtliche Sachverhalte in verständliche, praxisnahe Sprache zu übersetzen.
+
+**Befolge strikt diese Richtlinien:**
+
+1. **Verständlichkeit:** Vermeide unnötiges 'Juristendeutsch' und Schachtelsätze. Erkläre rechtliche Hürden so, dass ein kaufmännischer Geschäftsführer oder Ingenieur sie sofort versteht.
+    
+2. **Lösungsorientierung:** Der Mandant will keine Probleme hören, sondern Lösungen. Fokussiere dich auf das 'Was müssen wir tun?'. Beginne mit dem Ergebnis (Bottom Line Up Front).
+    
+3. **Wirtschaftlichkeit:** Berücksichtige bei deiner rechtlichen Einschätzung die wirtschaftlichen Folgen. Wenn eine rechtliche Lösung zu teuer oder bürokratisch ist (z.B. Messkonzepte), weise darauf hin.
+    
+4. **Struktur:** Nutze Aufzählungspunkte, klare Überschriften und kurze Absätze.
+    
+5. **Tone of Voice:** Souverän, partnerschaftlich, direkt, aber höflich. Dein Ziel ist es, dem Mandanten Sicherheit für seine Investitionsentscheidung zu geben.</div>
+                </div>
+
+                <h4>Schritt C: Testen</h4>
+                <p>Klicken Sie nacheinander auf Ihre neuen Folder und stellen Sie jeweils eine identische einfache Frage. Die Antwort wird nun automatisch sehr juristisch ausfallen.</p>
+                <div class="prompt-container">
+                    <div class="prompt-code">Darf ich Strom an meinen Nachbarn verkaufen?</div>
+                </div>
+            </div>
+
+            <!-- Aufgabe 8 -->
+            <div id="ex8" class="exercise-card">
+                <span class="step-number">Aufgabe 8</span>
+                <h3>Wissensdatenbank (Knowledge Base)</h3>
+                <p>Nutzen Sie die Wissensdatenbank-Funktion, um eigene Dokumente als Kontext für die KI bereitzustellen. So kann die KI auf Ihre spezifischen Unterlagen zugreifen.</p>
+                
+                <h4>Schritt A: Wissensdatenbank anlegen</h4>
+                <ul class="ui-steps">
+                    <li>Klicken Sie links im Menü auf <span class="path-highlight">Workspace</span>.</li>
+                    <li>Wählen Sie den Reiter <span class="path-highlight">Knowledge</span>.</li>
+                    <li>Klicken Sie auf <strong>"+ New Knowledge"</strong>.</li>
+                    <li>Geben Sie als Name <strong>"EEG"</strong> ein.</li>
+                    <li>Geben Sie als Beschreibung <strong>"EEG Wissen"</strong> ein.</li>
+                    <li>Klicken Sie auf <strong>"Create Knowledge"</strong>.</li>
+                </ul>
+
+                <h4>Schritt B: Dokument hochladen</h4>
+                <ul class="ui-steps">
+                    <li>Laden Sie zunächst die Datei <span class="path-highlight"><a href="EEG-2025.txt" download>EEG-2025.txt</a></span> herunter.</li>
+                    <li>Öffnen Sie die neu erstellte Wissensdatenbank <strong>"EEG"</strong>.</li>
+                    <li>Klicken Sie auf das Upload-Symbol oder ziehen Sie die Datei <strong>EEG-2025.txt</strong> in den Upload-Bereich.</li>
+                    <li>Warten Sie, bis die Datei verarbeitet wurde.</li>
+                </ul>
+
+                <h4>Schritt C: Chat ohne Wissensdatenbank</h4>
+                <p>Starten Sie einen <span class="path-highlight">Neuen Chat</span> und stellen Sie eine Frage zum EEG, ohne die Wissensdatenbank zu referenzieren:</p>
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Beispieleingabe (Prompt)</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p8a')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p8a">Was steht im Paragraph 4 des EEG 2025?</div>
+                </div>
+
+                <h4>Schritt D: Chat mit Wissensdatenbank</h4>
+                <p>Starten Sie einen weiteren <span class="path-highlight">Neuen Chat</span> und referenzieren Sie diesmal die Wissensdatenbank:</p>
+                <ul class="ui-steps">
+                    <li><strong>Option 1:</strong> Tippen Sie <span class="path-highlight">#EEG</span> in das Eingabefeld, um die Wissensdatenbank zu referenzieren.</li>
+                    <li><strong>Option 2:</strong> Klicken Sie auf das <strong>(+)</strong> Symbol im Eingabefeld → <strong>Attach Knowledge</strong> → wählen Sie <strong>"EEG"</strong>.</li>
+                    <li>Stellen Sie nun dieselbe Frage erneut:</li>
+                </ul>
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <span>Beispieleingabe (Prompt)</span>
+                        <button class="copy-btn" onclick="copyToClipboard('p8b')">Kopieren</button>
+                    </div>
+                    <div class="prompt-code" id="p8b">Was steht im Paragraph 4 des EEG 2025?</div>
+                </div>
+
+                <div class="tip-box">
+                    <span class="tip-icon">💡</span>
+                    <div><strong>Beobachtung:</strong> Vergleichen Sie die beiden Antworten. Mit der Wissensdatenbank kann die KI direkt auf den Inhalt des hochgeladenen EEG-Dokuments zugreifen und präzise Informationen aus dem Originaltext liefern, anstatt auf ihr allgemeines Trainingswissen zurückzugreifen.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Text in die Zwischenablage kopiert!");
+            });
+        }
+
+        // Highlight active nav link on scroll
+        const sections = document.querySelectorAll('.exercise-card, .header-section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
